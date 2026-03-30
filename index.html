@@ -885,37 +885,48 @@ async function callApi(userText) {
 
 function parseAiResponse(raw) {
   let statusData = null;
-  let story      = raw;
 
-  // Pattern 1: fenced ```json...``` or ```...```
-  const fenced = raw.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
-  if (fenced) {
-    try { const p = JSON.parse(fenced[1]); statusData = p.status || null; } catch(_) {}
-    story = raw.replace(/```(?:json)?[\s\S]*?```/g, '').trim();
-    return { story, statusData };
+  // Step 1: strip ALL fenced code blocks (even unclosed ones) and try to parse JSON from them
+  const fenceRe = /```(?:json)?[ \t]*((?:[^`]|`(?!``))*)/g;
+  let fenceMatch;
+  let cleaned = raw;
+  while ((fenceMatch = fenceRe.exec(raw)) !== null) {
+    const block = fenceMatch[1].replace(/```$/, '').trim();
+    if (!statusData) {
+      try { const p = JSON.parse(block); if (p.status) statusData = p.status; } catch(_) {}
+    }
   }
+  // Remove all fenced blocks from story (including unclosed ones)
+  cleaned = raw.replace(/```(?:json)?[\s\S]*?(?:```|$)/g, '').trim();
 
-  // Pattern 2: bare JSON with "status" key anywhere in response
-  const bareIdx = raw.search(/"status"\s*:/);
-  if (bareIdx !== -1) {
-    // Find the outermost { before "status"
-    let start = raw.lastIndexOf('{', bareIdx);
-    if (start !== -1) {
-      // Try to parse progressively from start to end
-      for (let end = raw.length; end > bareIdx; end--) {
-        if (raw[end] === '}') {
+  // Step 2: if no status yet, look for bare JSON object containing "status"
+  if (!statusData) {
+    // Find first { that leads to a parseable object with .status
+    let depth = 0, start = -1;
+    for (let i = 0; i < cleaned.length; i++) {
+      if (cleaned[i] === '{') { if (depth === 0) start = i; depth++; }
+      else if (cleaned[i] === '}') {
+        depth--;
+        if (depth === 0 && start !== -1) {
           try {
-            const p = JSON.parse(raw.slice(start, end + 1));
+            const p = JSON.parse(cleaned.slice(start, i + 1));
             if (p.status) {
               statusData = p.status;
-              story = (raw.slice(0, start) + raw.slice(end + 1)).trim();
-              return { story, statusData };
+              cleaned = (cleaned.slice(0, start) + cleaned.slice(i + 1)).trim();
+              break;
             }
           } catch(_) {}
+          start = -1;
         }
       }
     }
   }
+
+  // Step 3: also strip any remaining lines that look like raw JSON syntax artifacts
+  const story = cleaned
+    .replace(/^\s*[\[\]{}].*$/gm, '')   // lines that are just JSON brackets
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 
   return { story, statusData };
 }
