@@ -864,11 +864,20 @@ async function callApi(userText) {
 
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
-    try { const d = await res.json(); msg = d.error?.message || msg; } catch (_) {}
+    try {
+      const d = await res.json();
+      // OpenRouter returns errors in various shapes
+      msg = d.error?.message
+         || d.error?.code
+         || d.message
+         || JSON.stringify(d);
+    } catch (_) {}
     throw new Error(msg);
   }
 
   const data = await res.json();
+  // Check for error inside a 200 response (OpenRouter sometimes does this)
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
   return data.choices?.[0]?.message?.content || '';
 }
 
