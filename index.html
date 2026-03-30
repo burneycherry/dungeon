@@ -580,7 +580,9 @@ const DEFAULT_PARTY = [
   { id: 3, name: '盗賊',   icon: '🗡️', hp: 80,  maxHp: 80,  mp: 50,  maxMp: 50,  status: 'normal' }
 ];
 
-const DEFAULT_SYSPROMPT = `あなたはダンジョンRPGの熟練したゲームマスターです。
+const DEFAULT_SYSPROMPT = `【重要】必ず日本語のみで返答してください。英語は使用禁止です。
+
+あなたはダンジョンRPGの熟練したゲームマスターです。
 4人のパーティがダンジョンを探索しています。
 プレイヤーの行動に対し、緊張感ある物語と臨場感のある描写で応答してください。
 
@@ -885,13 +887,34 @@ function parseAiResponse(raw) {
   let statusData = null;
   let story      = raw;
 
-  const match = raw.match(/```json\s*([\s\S]*?)\s*```/);
-  if (match) {
-    try {
-      const parsed = JSON.parse(match[1]);
-      statusData = parsed.status || null;
-    } catch (_) {}
-    story = raw.replace(/```json[\s\S]*?```/g, '').trim();
+  // Pattern 1: fenced ```json...``` or ```...```
+  const fenced = raw.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+  if (fenced) {
+    try { const p = JSON.parse(fenced[1]); statusData = p.status || null; } catch(_) {}
+    story = raw.replace(/```(?:json)?[\s\S]*?```/g, '').trim();
+    return { story, statusData };
+  }
+
+  // Pattern 2: bare JSON with "status" key anywhere in response
+  const bareIdx = raw.search(/"status"\s*:/);
+  if (bareIdx !== -1) {
+    // Find the outermost { before "status"
+    let start = raw.lastIndexOf('{', bareIdx);
+    if (start !== -1) {
+      // Try to parse progressively from start to end
+      for (let end = raw.length; end > bareIdx; end--) {
+        if (raw[end] === '}') {
+          try {
+            const p = JSON.parse(raw.slice(start, end + 1));
+            if (p.status) {
+              statusData = p.status;
+              story = (raw.slice(0, start) + raw.slice(end + 1)).trim();
+              return { story, statusData };
+            }
+          } catch(_) {}
+        }
+      }
+    }
   }
 
   return { story, statusData };
