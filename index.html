@@ -580,7 +580,10 @@ const DEFAULT_PARTY = [
   { id: 3, name: '盗賊',   icon: '🗡️', hp: 80,  maxHp: 80,  mp: 50,  maxMp: 50,  status: 'normal' }
 ];
 
-const DEFAULT_SYSPROMPT = `【重要】必ず日本語のみで返答してください。英語は使用禁止です。
+const DEFAULT_SYSPROMPT = `【最重要ルール】
+1. 必ず日本語のみで返答してください。英語は絶対に使用禁止です。
+2. 返答の末尾には必ず以下の形式のJSONコードブロックを出力してください。ステータス説明を文章で書くことは禁止です。
+3. マークダウンの**bold**や*italic*は使用禁止です。
 
 あなたはダンジョンRPGの熟練したゲームマスターです。
 4人のパーティがダンジョンを探索しています。
@@ -743,6 +746,14 @@ function pushSysMsg(text) {
   scrollBottom();
 }
 
+function mdToHtml(text) {
+  return esc(text)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')   // **bold**
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')                  // *italic*
+    .replace(/`([^`]+)`/g, '<code>$2</code>')                // `code`
+    .replace(/\n/g, '<br>');
+}
+
 function appendMsgEl(m) {
   const area  = document.getElementById('chat-area');
   const outer = document.createElement('div');
@@ -750,10 +761,10 @@ function appendMsgEl(m) {
 
   if (m.type === 'narrator') {
     outer.innerHTML = `<div class="msg-sender">📖 ゲームマスター</div>
-      <div class="msg-bubble">${esc(m.text).replace(/\n/g, '<br>')}</div>`;
+      <div class="msg-bubble">${mdToHtml(m.text)}</div>`;
   } else if (m.type === 'player') {
     outer.innerHTML = `<div class="msg-sender">🛡️ パーティ</div>
-      <div class="msg-bubble">${esc(m.text).replace(/\n/g, '<br>')}</div>`;
+      <div class="msg-bubble">${mdToHtml(m.text)}</div>`;
   } else {
     outer.innerHTML = `<div class="msg-bubble">${esc(m.text)}</div>`;
   }
