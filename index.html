@@ -14,1098 +14,893 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <title>⚔️ Dungeon Chronicles</title>
-
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Crimson Pro', 'Times New Roman', serif;
-      background-color: #080810;
-      color: #e8d5b7;
-      overflow: hidden;
-      -webkit-text-size-adjust: 100%;
-    }
-
-    /* ── LAYOUT ── */
-    #app {
-      height: 100svh;
-      display: flex;
-      flex-direction: column;
-      padding-top: env(safe-area-inset-top, 0px);
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    /* ── HEADER / TITLE BAR ── */
-    #header-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 12px 4px;
-      background-color: #0c0c18;
-      border-bottom: 1px solid #3a2a1a;
-      flex-shrink: 0;
-    }
-    .title-text {
-      font-family: 'IM Fell English', 'Times New Roman', serif;
-      font-size: 17px;
-      color: #c9a227;
-      letter-spacing: 3px;
-      text-shadow: 0 0 12px rgba(201, 162, 39, 0.5);
-    }
-    .floor-badge {
-      font-family: 'IM Fell English', serif;
-      font-size: 11px;
-      color: #8a6a3a;
-      letter-spacing: 1px;
-    }
-    #btn-settings {
-      width: 36px;
-      height: 36px;
-      background: none;
-      border: 1px solid #3a2a1a;
-      border-radius: 6px;
-      color: #8a6a3a;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      -webkit-tap-highlight-color: transparent;
-    }
-    #btn-settings:active { background-color: #1a1828; }
-
-    /* ── PARTY PANEL ── */
-    #party-panel {
-      background-color: #0c0c18;
-      border-bottom: 2px solid #3a2a1a;
-      padding: 8px 10px;
-      flex-shrink: 0;
-    }
-    .party-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-    }
-    .member-card {
-      background-color: #14121e;
-      border: 1px solid #2e2040;
-      border-radius: 8px;
-      padding: 6px 6px 4px;
-      position: relative;
-      transition: border-color 0.3s;
-    }
-    .member-card.low-hp { border-color: #661122; }
-    .member-card.dead {
-      opacity: 0.45;
-      filter: grayscale(80%);
-    }
-    .member-header {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      margin-bottom: 5px;
-    }
-    .member-icon { font-size: 13px; line-height: 1; flex-shrink: 0; }
-    .member-name {
-      font-family: 'IM Fell English', serif;
-      font-size: 10px;
-      color: #d4a84b;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .bar-wrap { margin-bottom: 3px; }
-    .bar-label-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 8px;
-      color: #7a6a5a;
-      margin-bottom: 2px;
-    }
-    .bar-track {
-      height: 5px;
-      background-color: #1e1c2c;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .hp-fill {
-      height: 100%;
-      border-radius: 3px;
-      background: linear-gradient(90deg, #7a0e0e, #c72222);
-      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .mp-fill {
-      height: 100%;
-      border-radius: 3px;
-      background: linear-gradient(90deg, #0a0a7a, #1a5acc);
-      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .hp-fill.danger { background: linear-gradient(90deg, #550505, #aa1111); }
-    .status-chip {
-      display: block;
-      font-size: 7px;
-      text-align: center;
-      padding: 2px 3px;
-      border-radius: 3px;
-      margin-top: 3px;
-      background-color: #1c2a18;
-      color: #6aaa68;
-      border: 1px solid #2a4028;
-    }
-    .status-chip.poisoned { background-color: #221430; color: #cc55cc; border-color: #441a55; }
-    .status-chip.burned   { background-color: #2a1808; color: #dd7733; border-color: #553311; }
-    .status-chip.frozen   { background-color: #0a1830; color: #55aadd; border-color: #1a3d66; }
-    .status-chip.stunned  { background-color: #282216; color: #ddcc33; border-color: #5a4a10; }
-    .status-chip.dead     { background-color: #1e0c0c; color: #aa3333; border-color: #440e0e; }
-
-    /* ── CHAT AREA ── */
-    #chat-area {
-      flex: 1;
-      overflow-y: auto;
-      padding: 14px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      -webkit-overflow-scrolling: touch;
-      background-image:
-        radial-gradient(ellipse 60% 40% at 15% 60%, rgba(40, 20, 10, 0.3) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 30% at 85% 30%, rgba(15, 10, 40, 0.4) 0%, transparent 70%);
-    }
-    #chat-area::-webkit-scrollbar { width: 3px; }
-    #chat-area::-webkit-scrollbar-track { background: transparent; }
-    #chat-area::-webkit-scrollbar-thumb { background: #3a2a1a; border-radius: 2px; }
-
-    /* ── MESSAGES ── */
-    .msg { display: flex; flex-direction: column; max-width: 90%; animation: msgIn 0.25s ease-out; }
-    @keyframes msgIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .msg.narrator { align-self: flex-start; }
-    .msg.player   { align-self: flex-end; }
-    .msg.system   { align-self: center; max-width: 100%; }
-
-    .msg-sender {
-      font-family: 'IM Fell English', serif;
-      font-size: 10px;
-      color: #8a6a3a;
-      margin-bottom: 3px;
-      padding-left: 5px;
-      letter-spacing: 1px;
-    }
-    .msg.player .msg-sender { text-align: right; padding-right: 5px; color: #4a6a9a; }
-
-    .msg-bubble {
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 15px;
-      line-height: 1.65;
-    }
-    .msg.narrator .msg-bubble {
-      background-color: #131222;
-      border: 1px solid #2e2040;
-      border-left: 3px solid #c9a227;
-      color: #ead6b8;
-      font-style: italic;
-    }
-    .msg.player .msg-bubble {
-      background-color: #121c30;
-      border: 1px solid #243054;
-      border-right: 3px solid #3a6acc;
-      color: #bcd0ee;
-      text-align: right;
-    }
-    .msg.system .msg-bubble {
-      background: none;
-      color: #7a6a5a;
-      font-size: 12px;
-      font-style: italic;
-      text-align: center;
-      padding: 3px 8px;
-    }
-
-    /* ── TYPING ── */
-    .typing-wrap { display: flex; flex-direction: column; align-self: flex-start; }
-    .typing-bubble {
-      background-color: #131222;
-      border: 1px solid #2e2040;
-      border-left: 3px solid #c9a227;
-      border-radius: 10px;
-      padding: 12px 16px;
-      display: flex;
-      gap: 5px;
-      align-items: center;
-    }
-    .tdot {
-      width: 6px; height: 6px;
-      background-color: #c9a227;
-      border-radius: 50%;
-      animation: tdot 1.3s infinite;
-    }
-    .tdot:nth-child(2) { animation-delay: 0.2s; }
-    .tdot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes tdot {
-      0%, 65%, 100% { transform: translateY(0); opacity: 0.4; }
-      35% { transform: translateY(-5px); opacity: 1; }
-    }
-
-    /* ── QUICK ACTIONS ── */
-    #quick-bar {
-      display: flex;
-      gap: 6px;
-      padding: 6px 12px 0;
-      overflow-x: auto;
-      flex-shrink: 0;
-      background-color: #0c0c18;
-      -webkit-overflow-scrolling: touch;
-    }
-    #quick-bar::-webkit-scrollbar { display: none; }
-    .qbtn {
-      font-family: 'IM Fell English', serif;
-      font-size: 11px;
-      white-space: nowrap;
-      padding: 5px 10px;
-      background-color: #14121e;
-      border: 1px solid #2e2040;
-      border-radius: 20px;
-      color: #c9a227;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      flex-shrink: 0;
-    }
-    .qbtn:active { background-color: #1e1c30; border-color: #c9a227; }
-
-    /* ── INPUT PANEL ── */
-    #input-panel {
-      background-color: #0c0c18;
-      border-top: 2px solid #3a2a1a;
-      padding: 10px 12px 12px;
-      flex-shrink: 0;
-    }
-    .input-row {
-      display: flex;
-      gap: 8px;
-      align-items: flex-end;
-    }
-    #chat-input {
-      flex: 1;
-      background-color: #14121e;
-      border: 1px solid #2e2040;
-      border-radius: 10px;
-      color: #e8d5b7;
-      font-family: 'Crimson Pro', serif;
-      font-size: 16px;
-      padding: 10px 14px;
-      resize: none;
-      min-height: 44px;
-      max-height: 110px;
-      outline: none;
-      -webkit-appearance: none;
-      line-height: 1.5;
-    }
-    #chat-input::placeholder { color: #4a3a2a; }
-    #chat-input:focus { border-color: #c9a227; }
-    #btn-send {
-      width: 44px;
-      height: 44px;
-      background: linear-gradient(140deg, #8b6a10, #c9a227);
-      border: none;
-      border-radius: 10px;
-      color: #080810;
-      font-size: 19px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      -webkit-tap-highlight-color: transparent;
-      transition: opacity 0.2s;
-    }
-    #btn-send:disabled { opacity: 0.3; cursor: not-allowed; }
-    #btn-send:active:not(:disabled) { opacity: 0.75; }
-
-    /* ── MODAL ── */
-    #modal-overlay {
-      position: fixed;
-      inset: 0;
-      background-color: rgba(4, 4, 12, 0.9);
-      z-index: 200;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      padding: 0 0 env(safe-area-inset-bottom, 0px);
-    }
-    #modal-overlay.hidden { display: none; }
-    .modal-sheet {
-      background-color: #0e0e1c;
-      border: 1px solid #3a2a1a;
-      border-top: 2px solid #c9a227;
-      border-radius: 20px 20px 0 0;
-      width: 100%;
-      max-width: 520px;
-      max-height: 85vh;
-      overflow-y: auto;
-      padding: 20px 18px 24px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .modal-handle {
-      width: 40px; height: 4px;
-      background-color: #3a2a1a;
-      border-radius: 2px;
-      margin: 0 auto 16px;
-    }
-    .modal-title {
-      font-family: 'IM Fell English', serif;
-      font-size: 20px;
-      color: #c9a227;
-      text-align: center;
-      letter-spacing: 2px;
-      margin-bottom: 18px;
-      text-shadow: 0 0 10px rgba(201, 162, 39, 0.4);
-    }
-    .form-section {
-      margin-bottom: 16px;
-    }
-    .form-label {
-      font-family: 'IM Fell English', serif;
-      font-size: 13px;
-      color: #c9a227;
-      display: block;
-      margin-bottom: 6px;
-      letter-spacing: 1px;
-    }
-    .form-hint { font-size: 11px; color: #5a4a3a; margin-top: 4px; }
-    .f-input {
-      width: 100%;
-      background-color: #14121e;
-      border: 1px solid #2e2040;
-      border-radius: 8px;
-      color: #e8d5b7;
-      font-family: 'Crimson Pro', serif;
-      font-size: 16px;
-      padding: 10px 12px;
-      outline: none;
-      -webkit-appearance: none;
-    }
-    .f-input:focus { border-color: #c9a227; }
-    select.f-input { cursor: pointer; }
-    textarea.f-input { resize: vertical; line-height: 1.5; }
-    .party-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
-      align-items: center;
-    }
-    .party-row-icon { width: 52px; }
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 22px;
-    }
-    .btn-ok {
-      flex: 1;
-      background: linear-gradient(140deg, #8b6a10, #c9a227);
-      color: #080810;
-      border: none;
-      border-radius: 10px;
-      padding: 13px;
-      font-family: 'IM Fell English', serif;
-      font-size: 15px;
-      cursor: pointer;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-    .btn-cancel {
-      flex: 1;
-      background: none;
-      color: #7a6a5a;
-      border: 1px solid #3a2a1a;
-      border-radius: 10px;
-      padding: 13px;
-      font-family: 'IM Fell English', serif;
-      font-size: 15px;
-      cursor: pointer;
-    }
-    .danger-link {
-      display: block;
-      text-align: center;
-      font-size: 12px;
-      color: #883333;
-      background: none;
-      border: none;
-      cursor: pointer;
-      margin-top: 16px;
-      font-family: 'Crimson Pro', serif;
-      text-decoration: underline;
-    }
-    .divider {
-      height: 1px;
-      background-color: #2e2040;
-      margin: 16px 0;
-    }
-  </style>
-
+  <title>Dungeon Chronicles</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Crimson Pro','Times New Roman',serif;background-color:#080810;color:#e8d5b7;overflow:hidden;-webkit-text-size-adjust:100%}
+#app{height:100svh;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* HEADER */
+#header-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 10px 4px;background-color:#0c0c18;border-bottom:1px solid #3a2a1a;flex-shrink:0}
+.title-text{font-family:'IM Fell English',serif;font-size:15px;color:#c9a227;letter-spacing:2px;text-shadow:0 0 12px rgba(201,162,39,.5)}
+.floor-badge{font-family:'IM Fell English',serif;font-size:11px;color:#8a6a3a;letter-spacing:1px}
+.hdr-btn{width:32px;height:32px;background:none;border:1px solid #3a2a1a;border-radius:6px;color:#8a6a3a;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;position:relative}
+.hdr-btn:active{background-color:#1a1828}
+.badge-dot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;background-color:#e05555;border-radius:50%;border:1px solid #080810;display:none}
+/* PARTY */
+#party-panel{background-color:#0c0c18;border-bottom:2px solid #3a2a1a;padding:5px 7px;flex-shrink:0}
+.party-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.member-card{background-color:#14121e;border:1px solid #2e2040;border-radius:7px;padding:5px 4px 3px;position:relative;transition:border-color .3s;cursor:pointer}
+.member-card:active{background-color:#1a1828}
+.member-card.low-hp{border-color:#661122}
+.member-card.dead{opacity:.45;filter:grayscale(80%)}
+.member-card.levelup-ready{border-color:#c9a227;box-shadow:0 0 6px rgba(201,162,39,.4)}
+.member-top{display:flex;align-items:center;gap:2px;margin-bottom:3px}
+.member-icon{font-size:11px;flex-shrink:0}
+.member-name{font-family:'IM Fell English',serif;font-size:9px;color:#d4a84b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.member-lv{font-family:'IM Fell English',serif;font-size:8px;color:#c9a227;white-space:nowrap;flex-shrink:0}
+.bar-wrap{margin-bottom:2px}
+.bar-row{display:flex;justify-content:space-between;font-size:7px;color:#7a6a5a;margin-bottom:1px}
+.bar-track{height:4px;background-color:#1e1c2c;border-radius:2px;overflow:hidden}
+.hp-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#7a0e0e,#c72222);transition:width .6s cubic-bezier(.4,0,.2,1)}
+.mp-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#0a0a7a,#1a5acc);transition:width .6s cubic-bezier(.4,0,.2,1)}
+.exp-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#3a6a10,#7acc22);transition:width .6s cubic-bezier(.4,0,.2,1)}
+.hp-fill.danger{background:linear-gradient(90deg,#550505,#aa1111)}
+.status-chip{display:block;font-size:7px;text-align:center;padding:1px 2px;border-radius:3px;margin-top:2px;background-color:#1c2a18;color:#6aaa68;border:1px solid #2a4028}
+.status-chip.poisoned{background-color:#221430;color:#cc55cc;border-color:#441a55}
+.status-chip.burned{background-color:#2a1808;color:#dd7733;border-color:#553311}
+.status-chip.frozen{background-color:#0a1830;color:#55aadd;border-color:#1a3d66}
+.status-chip.stunned{background-color:#282216;color:#ddcc33;border-color:#5a4a10}
+.status-chip.dead{background-color:#1e0c0c;color:#aa3333;border-color:#440e0e}
+/* CHAT */
+#chat-area{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch;background-image:radial-gradient(ellipse 60% 40% at 15% 60%,rgba(40,20,10,.3) 0%,transparent 70%),radial-gradient(ellipse 50% 30% at 85% 30%,rgba(15,10,40,.4) 0%,transparent 70%)}
+#chat-area::-webkit-scrollbar{width:3px}
+#chat-area::-webkit-scrollbar-thumb{background:#3a2a1a;border-radius:2px}
+.msg{display:flex;flex-direction:column;max-width:92%;animation:msgIn .25s ease-out}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.narrator{align-self:flex-start}
+.msg.player{align-self:flex-end}
+.msg.system{align-self:center;max-width:100%}
+.msg-sender{font-family:'IM Fell English',serif;font-size:10px;color:#8a6a3a;margin-bottom:3px;padding-left:5px;letter-spacing:1px}
+.msg.player .msg-sender{text-align:right;padding-right:5px;color:#4a6a9a}
+.msg-bubble{padding:9px 13px;border-radius:10px;font-size:15px;line-height:1.65}
+.msg.narrator .msg-bubble{background-color:#131222;border:1px solid #2e2040;border-left:3px solid #c9a227;color:#ead6b8;font-style:italic}
+.msg.player .msg-bubble{background-color:#121c30;border:1px solid #243054;border-right:3px solid #3a6acc;color:#bcd0ee;text-align:right}
+.msg.system .msg-bubble{background:none;color:#7a6a5a;font-size:12px;font-style:italic;text-align:center;padding:3px 8px}
+.typing-wrap{display:flex;flex-direction:column;align-self:flex-start}
+.typing-bubble{background-color:#131222;border:1px solid #2e2040;border-left:3px solid #c9a227;border-radius:10px;padding:10px 14px;display:flex;gap:5px;align-items:center}
+.tdot{width:6px;height:6px;background-color:#c9a227;border-radius:50%;animation:tdot 1.3s infinite}
+.tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,65%,100%{transform:translateY(0);opacity:.4}35%{transform:translateY(-5px);opacity:1}}
+/* QUICK BAR */
+#quick-bar{display:flex;gap:5px;padding:5px 10px 0;overflow-x:auto;flex-shrink:0;background-color:#0c0c18;-webkit-overflow-scrolling:touch}
+#quick-bar::-webkit-scrollbar{display:none}
+.qbtn{font-family:'IM Fell English',serif;font-size:11px;white-space:nowrap;padding:4px 9px;background-color:#14121e;border:1px solid #2e2040;border-radius:20px;color:#c9a227;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.qbtn:active{background-color:#1e1c30;border-color:#c9a227}
+/* INPUT */
+#input-panel{background-color:#0c0c18;border-top:2px solid #3a2a1a;padding:8px 10px 10px;flex-shrink:0}
+.input-row{display:flex;gap:7px;align-items:flex-end}
+#chat-input{flex:1;background-color:#14121e;border:1px solid #2e2040;border-radius:10px;color:#e8d5b7;font-family:'Crimson Pro',serif;font-size:16px;padding:9px 12px;resize:none;min-height:44px;max-height:110px;outline:none;-webkit-appearance:none;line-height:1.5}
+#chat-input::placeholder{color:#4a3a2a}
+#chat-input:focus{border-color:#c9a227}
+#btn-send{width:44px;height:44px;background:linear-gradient(140deg,#8b6a10,#c9a227);border:none;border-radius:10px;color:#080810;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:opacity .2s}
+#btn-send:disabled{opacity:.3;cursor:not-allowed}
+#btn-send:active:not(:disabled){opacity:.75}
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background-color:rgba(4,4,12,.92);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0 0 env(safe-area-inset-bottom,0px)}
+.modal-overlay.hidden{display:none}
+.modal-sheet{background-color:#0e0e1c;border:1px solid #3a2a1a;border-top:2px solid #c9a227;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;padding:18px 16px 22px;-webkit-overflow-scrolling:touch}
+.modal-handle{width:40px;height:4px;background-color:#3a2a1a;border-radius:2px;margin:0 auto 14px}
+.modal-title{font-family:'IM Fell English',serif;font-size:19px;color:#c9a227;text-align:center;letter-spacing:2px;margin-bottom:16px;text-shadow:0 0 10px rgba(201,162,39,.4)}
+.form-label{font-family:'IM Fell English',serif;font-size:13px;color:#c9a227;display:block;margin-bottom:5px;letter-spacing:1px}
+.form-hint{font-size:11px;color:#5a4a3a;margin-top:3px}
+.form-section{margin-bottom:14px}
+.f-input{width:100%;background-color:#14121e;border:1px solid #2e2040;border-radius:8px;color:#e8d5b7;font-family:'Crimson Pro',serif;font-size:16px;padding:9px 11px;outline:none;-webkit-appearance:none}
+.f-input:focus{border-color:#c9a227}
+select.f-input{cursor:pointer}
+textarea.f-input{resize:vertical;line-height:1.5}
+.modal-actions{display:flex;gap:9px;margin-top:20px}
+.btn-ok{flex:1;background:linear-gradient(140deg,#8b6a10,#c9a227);color:#080810;border:none;border-radius:10px;padding:12px;font-family:'IM Fell English',serif;font-size:15px;cursor:pointer;font-weight:bold;letter-spacing:1px}
+.btn-cancel{flex:1;background:none;color:#7a6a5a;border:1px solid #3a2a1a;border-radius:10px;padding:12px;font-family:'IM Fell English',serif;font-size:15px;cursor:pointer}
+.danger-link{display:block;text-align:center;font-size:12px;color:#883333;background:none;border:none;cursor:pointer;margin-top:14px;font-family:'Crimson Pro',serif;text-decoration:underline}
+.divider{height:1px;background-color:#2e2040;margin:14px 0}
+.tab-bar{display:flex;gap:4px;margin-bottom:12px}
+.tab-btn{flex:1;padding:7px;background-color:#14121e;border:1px solid #2e2040;border-radius:7px;color:#7a6a5a;font-family:'IM Fell English',serif;font-size:12px;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
+.tab-btn.active{background-color:#1e1c30;border-color:#c9a227;color:#c9a227}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+.stat-row{display:flex;justify-content:space-between;font-size:11px;padding:2px 6px;background-color:#1a1828;border-radius:4px}
+.stat-key{color:#8a7a6a}
+.stat-val{color:#e8d5b7;font-weight:600}
+/* LEVEL UP */
+.lu-points-left{text-align:center;font-size:13px;color:#8aaa6a;margin-bottom:14px}
+.lu-stat-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background-color:#14121e;border:1px solid #2e2040;border-radius:8px;margin-bottom:6px}
+.lu-stat-name{font-family:'IM Fell English',serif;font-size:13px;color:#d4a84b;width:40px}
+.lu-stat-desc{font-size:10px;color:#5a4a3a;flex:1;padding:0 8px}
+.lu-stat-val{font-size:14px;color:#e8d5b7;width:28px;text-align:center}
+.lu-btn{width:28px;height:28px;background:none;border:1px solid #3a2a1a;border-radius:6px;color:#c9a227;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.lu-btn:disabled{opacity:.3;cursor:default}
+.lu-btn:active:not(:disabled){background-color:#1e1c30}
+.auto-btn{width:100%;background-color:#1a1828;border:1px solid #2e2040;border-radius:8px;color:#8aaa6a;font-family:'IM Fell English',serif;font-size:13px;padding:9px;cursor:pointer;margin-bottom:10px}
+.auto-btn:active{background-color:#222030}
+/* EQUIPMENT */
+.equip-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
+.equip-slot{background-color:#14121e;border:1px solid #2e2040;border-radius:8px;padding:8px 9px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.equip-slot:active{background-color:#1e1c30}
+.equip-slot-label{font-size:10px;color:#7a6a5a;margin-bottom:2px}
+.equip-slot-item{font-size:13px;color:#d4a84b}
+.equip-slot.empty .equip-slot-item{color:#3a3048;font-style:italic}
+.equip-slot-stats{font-size:10px;color:#5a4a3a;margin-top:2px}
+.item-list{max-height:220px;overflow-y:auto}
+.item-row{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background-color:#14121e;border:1px solid #2e2040;border-radius:7px;margin-bottom:5px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.item-row:active{background-color:#1e1c30}
+.item-row.equipped{border-color:#c9a227}
+.item-name{font-size:13px;color:#d4a84b}
+.item-stats{font-size:10px;color:#5a4a3a}
+.item-action{font-size:11px;color:#c9a227;font-family:'IM Fell English',serif;flex-shrink:0}
+.party-cfg-row{display:flex;gap:6px;margin-bottom:8px;align-items:center}
+</style>
 </head>
 <body>
-
 <div id="app">
-
-  <!-- ── HEADER ── -->
-
   <div id="header-bar">
-    <div>
-      <div class="title-text">⚔️ DUNGEON CHRONICLES</div>
-    </div>
-    <div style="display:flex; align-items:center; gap:10px;">
+    <div class="title-text">DUNGEON CHRONICLES</div>
+    <div style="display:flex;align-items:center;gap:5px">
       <span class="floor-badge" id="floor-badge">B1F</span>
-      <button id="btn-settings" onclick="openSettings()" title="設定">⚙️</button>
+      <button class="hdr-btn" onclick="openEquipModal()" title="装備">🗡</button>
+      <button class="hdr-btn" onclick="openLevelUpModal()" title="レベルアップ">LV<span class="badge-dot" id="dot-levelup"></span></button>
+      <button class="hdr-btn" onclick="openSettings()" title="設定">⚙</button>
     </div>
   </div>
 
-  <!-- ── PARTY PANEL ── -->
-
-  <div id="party-panel">
-    <div class="party-grid" id="party-grid"></div>
-  </div>
-
-  <!-- ── CHAT AREA ── -->
-
+  <div id="party-panel"><div class="party-grid" id="party-grid"></div></div>
   <div id="chat-area"></div>
 
-  <!-- ── QUICK ACTIONS ── -->
-
   <div id="quick-bar">
-    <button class="qbtn" onclick="quickAction('周囲を探索する')">🔍 探索</button>
-    <button class="qbtn" onclick="quickAction('前進する')">🚶 前進</button>
-    <button class="qbtn" onclick="quickAction('敵に攻撃する')">⚔️ 攻撃</button>
-    <button class="qbtn" onclick="quickAction('魔法を詠唱する')">✨ 魔法</button>
-    <button class="qbtn" onclick="quickAction('回復する')">💚 回復</button>
-    <button class="qbtn" onclick="quickAction('宝箱を調べる')">📦 宝箱</button>
-    <button class="qbtn" onclick="quickAction('逃げる！')">💨 逃走</button>
-    <button class="qbtn" onclick="quickAction('休憩する')">🏕️ 休憩</button>
+    <button class="qbtn" onclick="quickAction('周囲を探索する')">探索</button>
+    <button class="qbtn" onclick="quickAction('前進する')">前進</button>
+    <button class="qbtn" onclick="quickAction('敵に攻撃する')">攻撃</button>
+    <button class="qbtn" onclick="quickAction('魔法を詠唱する')">魔法</button>
+    <button class="qbtn" onclick="quickAction('回復する')">回復</button>
+    <button class="qbtn" onclick="quickAction('宝箱を調べる')">宝箱</button>
+    <button class="qbtn" onclick="quickAction('逃げる！')">逃走</button>
+    <button class="qbtn" onclick="quickAction('休憩する')">休憩</button>
   </div>
-
-  <!-- ── INPUT PANEL ── -->
 
   <div id="input-panel">
     <div class="input-row">
-      <textarea
-        id="chat-input"
-        rows="1"
-        placeholder="行動を入力... (例: 宝箱を慎重に開ける)"
-        onkeydown="handleKeyDown(event)"
-        oninput="autoResize(this)"
-      ></textarea>
-      <button id="btn-send" onclick="sendMessage()" title="送信">➤</button>
+      <textarea id="chat-input" rows="1" placeholder="行動を入力... (例: 宝箱を慎重に開ける)"
+        onkeydown="handleKeyDown(event)" oninput="autoResize(this)"></textarea>
+      <button id="btn-send" onclick="sendMessage()">&#x27A4;</button>
     </div>
   </div>
-
-</div><!-- /#app -->
-
-<!-- ── SETTINGS MODAL ── -->
-
-<div id="modal-overlay" class="hidden" onclick="handleOverlayClick(event)">
-  <div class="modal-sheet" id="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">⚙️ 設定 &amp; API</div>
-
-```
-<!-- API Provider -->
-<div class="form-section">
-  <label class="form-label">🔌 APIプロバイダー</label>
-  <select class="f-input" id="sel-provider" onchange="onProviderChange()">
-    <option value="openrouter">OpenRouter（推奨・多モデル対応）</option>
-    <option value="openai">OpenAI</option>
-    <option value="custom">カスタムエンドポイント</option>
-  </select>
 </div>
 
-<div class="form-section" id="grp-custom" style="display:none;">
-  <label class="form-label">🌐 カスタムURL</label>
-  <input type="url" class="f-input" id="inp-custom-url" placeholder="https://your-endpoint.com/v1">
+<!-- SETTINGS MODAL -->
+
+<div id="modal-settings" class="modal-overlay hidden" onclick="overlayClick(event,'modal-settings')">
+<div class="modal-sheet">
+  <div class="modal-handle"></div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('api',this,'settings')">API</button>
+    <button class="tab-btn" onclick="switchTab('party',this,'settings')">パーティ</button>
+    <button class="tab-btn" onclick="switchTab('sys',this,'settings')">プロンプト</button>
+  </div>
+  <div id="stab-api">
+    <div class="form-section">
+      <label class="form-label">APIプロバイダー</label>
+      <select class="f-input" id="sel-provider" onchange="onProviderChange()">
+        <option value="custom">カスタム (Gemini等)</option>
+        <option value="openrouter">OpenRouter</option>
+        <option value="openai">OpenAI</option>
+      </select>
+    </div>
+    <div class="form-section" id="grp-custom">
+      <label class="form-label">カスタムURL</label>
+      <input type="url" class="f-input" id="inp-custom-url" placeholder="https://generativelanguage.googleapis.com/v1beta/openai">
+    </div>
+    <div class="form-section">
+      <label class="form-label">APIキー</label>
+      <input type="password" class="f-input" id="inp-apikey" placeholder="AIza... / sk-...">
+      <div class="form-hint">このデバイスのlocalStorageのみに保存</div>
+    </div>
+    <div class="form-section">
+      <label class="form-label">モデル</label>
+      <input type="text" class="f-input" id="inp-model" placeholder="gemini-2.0-flash">
+      <div class="form-hint" id="model-hint">Google AI Studio: gemini-2.0-flash / OpenRouter: openrouter/free</div>
+    </div>
+  </div>
+  <div id="stab-party" style="display:none"><div id="party-config-list"></div></div>
+  <div id="stab-sys" style="display:none">
+    <textarea class="f-input" id="inp-sysprompt" rows="9"></textarea>
+  </div>
+  <div class="modal-actions">
+    <button class="btn-cancel" onclick="closeModal('modal-settings')">閉じる</button>
+    <button class="btn-ok" onclick="saveSettings()">保存</button>
+  </div>
+  <button class="danger-link" onclick="confirmReset()">ゲームをリセット</button>
+</div>
 </div>
 
-<!-- API Key -->
-<div class="form-section">
-  <label class="form-label">🔑 APIキー</label>
-  <input type="password" class="f-input" id="inp-apikey" placeholder="sk-or-... / sk-...">
-  <div class="form-hint">このデバイスのlocalStorageにのみ保存。外部送信されません。</div>
-</div>
+<!-- LEVEL UP MODAL -->
 
-<!-- Model -->
-<div class="form-section">
-  <label class="form-label">🤖 モデル</label>
-  <input type="text" class="f-input" id="inp-model" placeholder="anthropic/claude-3-haiku">
-  <div class="form-hint" id="model-hint">例: anthropic/claude-3.5-sonnet, meta-llama/llama-3.3-70b-instruct</div>
-</div>
-
-<div class="divider"></div>
-
-<!-- System Prompt -->
-<div class="form-section">
-  <label class="form-label">📖 システムプロンプト</label>
-  <textarea class="f-input" id="inp-sysprompt" rows="5"></textarea>
-</div>
-
-<div class="divider"></div>
-
-<!-- Party Config -->
-<div class="form-section">
-  <label class="form-label">🛡️ パーティメンバー設定</label>
-  <div id="party-config-list"></div>
-</div>
-
-<div class="modal-actions">
-  <button class="btn-cancel" onclick="closeSettings()">キャンセル</button>
-  <button class="btn-ok" onclick="saveSettings()">💾 保存</button>
-</div>
-
-<button class="danger-link" onclick="confirmReset()">🗑️ ゲームをリセット（データ消去）</button>
-```
-
+<div id="modal-lu" class="modal-overlay hidden">
+<div class="modal-sheet">
+  <div class="modal-handle"></div>
+  <div class="modal-title">レベルアップ！</div>
+  <div class="tab-bar" id="lu-tabs"></div>
+  <div id="lu-content"></div>
+  <div class="modal-actions">
+    <button class="btn-ok" onclick="confirmLevelUp()">確定</button>
   </div>
 </div>
+</div>
 
-<!-- ── JAVASCRIPT ── -->
+<!-- EQUIP MODAL -->
+
+<div id="modal-equip" class="modal-overlay hidden" onclick="overlayClick(event,'modal-equip')">
+<div class="modal-sheet">
+  <div class="modal-handle"></div>
+  <div class="modal-title">装備管理</div>
+  <div class="tab-bar" id="eq-tabs"></div>
+  <div id="eq-content"></div>
+  <div class="modal-actions">
+    <button class="btn-ok" onclick="closeModal('modal-equip')">閉じる</button>
+  </div>
+</div>
+</div>
+
+<!-- ITEM SELECT MODAL -->
+
+<div id="modal-item" class="modal-overlay hidden" onclick="overlayClick(event,'modal-item')">
+<div class="modal-sheet">
+  <div class="modal-handle"></div>
+  <div class="modal-title" id="item-modal-title">アイテム選択</div>
+  <div class="item-list" id="item-modal-list"></div>
+  <div class="modal-actions" style="margin-top:12px">
+    <button class="btn-cancel" style="color:#883333;border-color:#441a1a" onclick="unequipSlot()">外す</button>
+    <button class="btn-cancel" onclick="closeModal('modal-item')">キャンセル</button>
+  </div>
+</div>
+</div>
 
 <script>
 // ================================================================
-//  DEFAULTS
+// JOB & ITEM DATA
 // ================================================================
-const DEFAULT_PARTY = [
-  { id: 0, name: '戦士',   icon: '⚔️',  hp: 120, maxHp: 120, mp: 30,  maxMp: 30,  status: 'normal' },
-  { id: 1, name: '魔法使い', icon: '🧙',  hp: 70,  maxHp: 70,  mp: 110, maxMp: 110, status: 'normal' },
-  { id: 2, name: '僧侶',   icon: '✨',  hp: 90,  maxHp: 90,  mp: 90,  maxMp: 90,  status: 'normal' },
-  { id: 3, name: '盗賊',   icon: '🗡️', hp: 80,  maxHp: 80,  mp: 50,  maxMp: 50,  status: 'normal' }
-];
+const JOBS = {
+  warrior: { name:'戦士',   icon:'⚔️',  auto:{str:2,vit:2,spd:0,mag:0,lck:0}, pts:3 },
+  mage:    { name:'魔法使い',icon:'🧙',  auto:{str:0,vit:0,spd:1,mag:3,lck:0}, pts:3 },
+  priest:  { name:'僧侶',   icon:'✨',  auto:{str:0,vit:1,spd:0,mag:2,lck:1}, pts:3 },
+  thief:   { name:'盗賊',   icon:'🗡️', auto:{str:1,vit:0,spd:2,mag:0,lck:1}, pts:3 }
+};
+const JOB_KEYS = ['warrior','mage','priest','thief'];
 
-const DEFAULT_SYSPROMPT = `【最重要ルール】
-1. 必ず日本語のみで返答してください。英語は絶対に使用禁止です。
-2. 返答の末尾には必ず以下の形式のJSONコードブロックを出力してください。ステータス説明を文章で書くことは禁止です。
-3. マークダウンの**bold**や*italic*は使用禁止です。
+const SLOT_LABELS = { rhand:'右手', lhand:'左手', head:'頭', armor:'鎧', feet:'足', acc:'アクセ' };
+const SLOT_KEYS   = ['rhand','lhand','head','armor','feet','acc'];
 
-あなたはダンジョンRPGの熟練したゲームマスターです。
-4人のパーティがダンジョンを探索しています。
-プレイヤーの行動に対し、緊張感ある物語と臨場感のある描写で応答してください。
+const STARTER = {
+  warrior: { rhand:'iron_sword',   lhand:'wooden_shield', head:'iron_helm',    armor:'chain_mail',    feet:'iron_boots',    acc:null },
+  mage:    { rhand:'oak_staff',    lhand:null,            head:null,           armor:'robe',          feet:'leather_boots', acc:'mana_ring' },
+  priest:  { rhand:'holy_rod',     lhand:'small_shield',  head:null,           armor:'robe',          feet:'leather_boots', acc:'prayer_bead' },
+  thief:   { rhand:'dagger',       lhand:'dagger',        head:'leather_cap',  armor:'leather_armor', feet:'soft_boots',    acc:null }
+};
 
-パーティの構成:
-- ID0: 戦士（タンク、高HP・物理攻撃担当）
-- ID1: 魔法使い（低HP・高MP、強力な魔法）
-- ID2: 僧侶（回復・補助魔法）
-- ID3: 盗賊（罠解除・素早い攻撃）
+const IDATA = {
+  iron_sword:    {name:'鉄の剣',       slot:'rhand',icon:'⚔️', str:4,  atk:8,  hit:5},
+  oak_staff:     {name:'樫の杖',       slot:'rhand',icon:'🪄', mag:3,  matk:6},
+  holy_rod:      {name:'聖なる杖',     slot:'rhand',icon:'✨', mag:2,  matk:4, lck:2},
+  dagger:        {name:'短剣',         slot:'rhand',icon:'🗡️',str:2,  atk:5,  spd:3, hit:8},
+  wooden_shield: {name:'木の盾',       slot:'lhand',icon:'🛡️',def:4},
+  small_shield:  {name:'小盾',         slot:'lhand',icon:'🛡️',def:3,  mdef:2},
+  iron_helm:     {name:'鉄の兜',       slot:'head', icon:'⛑️',vit:1,  def:5},
+  leather_cap:   {name:'革の帽子',     slot:'head', icon:'🎩', spd:1, def:2,  eva:3},
+  chain_mail:    {name:'チェインメイル',slot:'armor',icon:'🥋',vit:2,  def:10},
+  robe:          {name:'ローブ',       slot:'armor',icon:'👘', mag:1, mdef:6},
+  leather_armor: {name:'革の鎧',       slot:'armor',icon:'🥋',def:6,  spd:1},
+  iron_boots:    {name:'鉄の靴',       slot:'feet', icon:'👢', def:4, vit:1},
+  leather_boots: {name:'革の靴',       slot:'feet', icon:'👟', spd:2, eva:4},
+  soft_boots:    {name:'軟靴',         slot:'feet', icon:'👟', spd:3, eva:6},
+  mana_ring:     {name:'マナリング',   slot:'acc',  icon:'💍', mag:2, mp:20},
+  prayer_bead:   {name:'祈りの数珠',   slot:'acc',  icon:'📿', lck:3, mdef:4},
+  steel_sword:   {name:'鋼の剣',       slot:'rhand',icon:'⚔️', str:6, atk:14, hit:8},
+  fire_staff:    {name:'炎の杖',       slot:'rhand',icon:'🪄', mag:6, matk:14},
+  elven_bow:     {name:'エルフの弓',   slot:'rhand',icon:'🏹', str:3, spd:4,  atk:10, hit:15},
+  plate_armor:   {name:'プレートアーマー',slot:'armor',icon:'🥋',vit:4,def:18},
+  dragon_shield: {name:'竜鱗の盾',     slot:'lhand',icon:'🛡️',def:12, mdef:8},
+  speed_ring:    {name:'疾風の指輪',   slot:'acc',  icon:'💍', spd:5, eva:8},
+  power_ring:    {name:'力の指輪',     slot:'acc',  icon:'💍', str:5, atk:6},
+  circlet:       {name:'魔法の冠',     slot:'head', icon:'👑', mag:4, mdef:5}
+};
 
-【必須】毎回のレスポンス末尾に必ず以下のJSON形式でステータスを更新してください：
+// ================================================================
+// DERIVED STATS
+// ================================================================
+function calcDerived(m) {
+  const B = {str:0,mag:0,vit:0,spd:0,lck:0,atk:0,def:0,matk:0,mdef:0,hit:0,eva:0,hp:0,mp:0};
+  SLOT_KEYS.forEach(s => {
+    const item = IDATA[m.equip && m.equip[s]];
+    if (!item) return;
+    ['str','mag','vit','spd','lck','atk','def','matk','mdef','hit','eva','hp','mp'].forEach(k=>{if(item[k]) B[k]+=item[k];});
+  });
+  const s = m.stats;
+  return {
+    maxHp: Math.floor(s.vit*12 + m.level*5 + 50 + B.hp),
+    maxMp: Math.floor(s.mag*8  + m.level*3 + 10 + B.mp),
+    atk:   Math.floor(s.str*2  + B.atk + B.str),
+    def:   Math.floor(s.vit    + B.def + B.vit*0.5),
+    matk:  Math.floor(s.mag*2  + B.matk + B.mag),
+    mdef:  Math.floor(s.mag + s.lck*0.5 + B.mdef),
+    hit:   Math.floor(s.spd + s.lck*0.5 + B.hit),
+    eva:   Math.floor(s.spd*1.5 + s.lck*0.5 + B.eva),
+    crit:  Math.floor(s.lck*2)
+  };
+}
+
+// ================================================================
+// DEFAULT PARTY BUILDER
+// ================================================================
+function makeMember(jobKey, id) {
+  const j = JOBS[jobKey];
+  const base = {str:8,mag:5,vit:8,spd:6,lck:5};
+  if(jobKey==='warrior') {base.str+=4;base.vit+=4;}
+  if(jobKey==='mage')    {base.mag+=6;base.spd+=2;}
+  if(jobKey==='priest')  {base.mag+=4;base.vit+=2;base.lck+=2;}
+  if(jobKey==='thief')   {base.spd+=5;base.lck+=3;base.str+=2;}
+  const m = {
+    id, name:j.name, icon:j.icon, jobKey,
+    level:1, exp:0, expNext:100, pendingPoints:0,
+    stats:{...base},
+    equip:{...STARTER[jobKey]},
+    status:'normal'
+  };
+  const d = calcDerived(m);
+  m.hp = d.maxHp; m.mp = d.maxMp;
+  return m;
+}
+
+// ================================================================
+// STATE
+// ================================================================
+const STORAGE_KEY = 'dchrpg_v4';
+const DEFAULT_SETTINGS = {
+  provider:'custom',
+  customUrl:'https://generativelanguage.googleapis.com/v1beta/openai',
+  apiKey:'', model:'gemini-2.0-flash',
+  systemPrompt: buildDefaultPrompt()
+};
+
+let S = {
+  party: JOB_KEYS.map((j,i)=>makeMember(j,i)),
+  messages: [], floor:1, loading:false,
+  settings:{...DEFAULT_SETTINGS},
+  sharedInventory:[]
+};
+
+function buildDefaultPrompt() {
+  return `【最重要ルール】
+1. 必ず日本語のみで返答してください。英語は絶対使用禁止。
+2. マークダウン(**bold**等)は使用禁止。装飾なしの文章で書いてください。
+3. 返答末尾に必ず下記JSON形式のコードブロックを出力してください。
+
+あなたは熟練したダンジョンRPGのゲームマスターです。4人パーティがダンジョンを探索しています。
+
+パーティ構成:
+- ID0: 戦士（タンク・物理攻撃）, ID1: 魔法使い（魔法攻撃）, ID2: 僧侶（回復）, ID3: 盗賊（素早い攻撃）
+
+ステータス: 力(STR)→攻撃, 魔力(MAG)→魔法/MP, 体力(VIT)→HP/防御, 速度(SPD)→回避/命中, 運(LCK)→クリティカル
+
+戦闘で敵を倒した場合のみexpGainedに値を入れてください（0以外）。
+アイテムが手に入った場合はitemsFoundに記載してください。
+利用可能なアイテムID: steel_sword, fire_staff, elven_bow, plate_armor, dragon_shield, speed_ring, power_ring, circlet
+
+必ず返答末尾にこのJSONコードブロックを出力:
 
 \`\`\`json
 {
   "status": {
     "party": [
-      {"id": 0, "hp": 120, "maxHp": 120, "mp": 30,  "maxMp": 30,  "status": "normal"},
-      {"id": 1, "hp": 70,  "maxHp": 70,  "mp": 110, "maxMp": 110, "status": "normal"},
-      {"id": 2, "hp": 90,  "maxHp": 90,  "mp": 90,  "maxMp": 90,  "status": "normal"},
-      {"id": 3, "hp": 80,  "maxHp": 80,  "mp": 50,  "maxMp": 50,  "status": "normal"}
+      {"id":0,"hp":120,"maxHp":120,"mp":30,"maxMp":30,"status":"normal"},
+      {"id":1,"hp":70,"maxHp":70,"mp":110,"maxMp":110,"status":"normal"},
+      {"id":2,"hp":90,"maxHp":90,"mp":90,"maxMp":90,"status":"normal"},
+      {"id":3,"hp":80,"maxHp":80,"mp":50,"maxMp":50,"status":"normal"}
     ],
-    "floor": 1,
-    "event": "exploration"
+    "floor":1, "event":"exploration", "expGained":0, "itemsFound":[]
   }
 }
 \`\`\`
 
-status値: normal / poisoned / burned / frozen / stunned / dead
-event値: exploration / battle / treasure / boss / rest / trap`;
-
-const DEFAULT_SETTINGS = {
-  provider: 'openrouter',
-  customUrl: '',
-  apiKey: '',
-  model: 'anthropic/claude-3-haiku',
-  systemPrompt: DEFAULT_SYSPROMPT
-};
-
-const PROVIDER_URLS = {
-  openrouter: 'https://openrouter.ai/api/v1',
-  openai:     'https://api.openai.com/v1'
-};
-
-const STORAGE_KEY = 'dchrpg_v1';
+event: exploration/battle/treasure/boss/rest/trap
+status: normal/poisoned/burned/frozen/stunned/dead`;
+}
 
 // ================================================================
-//  STATE
-// ================================================================
-let state = {
-  party:    JSON.parse(JSON.stringify(DEFAULT_PARTY)),
-  messages: [],
-  floor:    1,
-  loading:  false,
-  settings: { ...DEFAULT_SETTINGS }
-};
-
-// ================================================================
-//  INIT
+// INIT
 // ================================================================
 function init() {
   loadState();
   renderParty();
   renderAllMessages();
-  if (state.messages.length === 0) {
-    pushSysMsg('⚙️ APIキーを設定して冒険を始めよう！右上の⚙️から設定できます。');
-    pushNarratorMsg(
-      '闇に沈むダンジョンの入口。湿った石の匂いと、遠くから聞こえる不気味な唸り声——\n\n' +
-      '松明の炎が4人の冒険者たちの顔を照らし出す。\n\n' +
-      '「ここから先、退路はない」と戦士は低く呟いた。\n\n' +
-      '——さあ、何をする？',
-      false
-    );
+  updateBadges();
+  if (!S.messages.length) {
+    pushSys('右上のAPIキー(⚙)を設定して冒険を始めよう！Google AI StudioのGeminiが無料でおすすめです。');
+    pushNarrator('闇に沈むダンジョンの入口。湿った石の匂いと、遠くから聞こえる不気味な唸り声——\n松明の炎が4人の冒険者たちの顔を照らし出す。\n「ここから先、退路はない」と戦士は低く呟いた。\n——さあ、何をする？', false);
     saveState();
   }
-  if (!state.settings.apiKey) setTimeout(openSettings, 600);
-  registerSW();
+  if (!S.settings.apiKey) setTimeout(openSettings, 700);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
 // ================================================================
-//  PARTY RENDERING
+// RENDER PARTY
 // ================================================================
-const STATUS_LABELS = {
-  normal:   '✅ 正常',
-  poisoned: '☠️ 毒',
-  burned:   '🔥 炎上',
-  frozen:   '❄️ 氷結',
-  stunned:  '💫 スタン',
-  dead:     '💀 戦闘不能'
-};
+const SL = { normal:'正常', poisoned:'毒', burned:'炎上', frozen:'氷結', stunned:'スタン', dead:'戦闘不能' };
 
 function renderParty() {
-  const grid = document.getElementById('party-grid');
-  grid.innerHTML = state.party.map(m => {
-    const hpPct  = Math.max(0, Math.min(100, (m.hp / m.maxHp) * 100));
-    const mpPct  = Math.max(0, Math.min(100, (m.mp / m.maxMp) * 100));
-    const isDead = m.status === 'dead' || m.hp <= 0;
-    const isLow  = hpPct < 30 && !isDead;
-    return `
-      <div class="member-card ${isDead ? 'dead' : ''} ${isLow ? 'low-hp' : ''}">
-        <div class="member-header">
-          <span class="member-icon">${m.icon}</span>
-          <span class="member-name">${esc(m.name)}</span>
-        </div>
-        <div class="bar-wrap">
-          <div class="bar-label-row"><span>HP</span><span>${m.hp}/${m.maxHp}</span></div>
-          <div class="bar-track">
-            <div class="hp-fill ${isLow ? 'danger' : ''}" style="width:${hpPct}%"></div>
-          </div>
-        </div>
-        <div class="bar-wrap">
-          <div class="bar-label-row"><span>MP</span><span>${m.mp}/${m.maxMp}</span></div>
-          <div class="bar-track">
-            <div class="mp-fill" style="width:${mpPct}%"></div>
-          </div>
-        </div>
-        <span class="status-chip ${m.status !== 'normal' ? m.status : ''}">${STATUS_LABELS[m.status] || m.status}</span>
-      </div>`;
+  document.getElementById('party-grid').innerHTML = S.party.map(m => {
+    const d = calcDerived(m);
+    const hpP  = Math.max(0,Math.min(100,(m.hp/d.maxHp)*100));
+    const mpP  = Math.max(0,Math.min(100,(m.mp/d.maxMp)*100));
+    const expP = Math.max(0,Math.min(100,(m.exp/m.expNext)*100));
+    const dead = m.status==='dead'||m.hp<=0;
+    const low  = hpP<30&&!dead;
+    const lu   = m.pendingPoints>0;
+    return `<div class="member-card ${dead?'dead':''} ${low?'low-hp':''} ${lu?'levelup-ready':''}" onclick="cardTap(${m.id})">
+      <div class="member-top"><span class="member-icon">${m.icon}</span><span class="member-name">${esc(m.name)}</span><span class="member-lv">Lv${m.level}</span></div>
+      <div class="bar-wrap"><div class="bar-row"><span>HP</span><span>${m.hp}/${d.maxHp}</span></div><div class="bar-track"><div class="hp-fill ${low?'danger':''}" style="width:${hpP}%"></div></div></div>
+      <div class="bar-wrap"><div class="bar-row"><span>MP</span><span>${m.mp}/${d.maxMp}</span></div><div class="bar-track"><div class="mp-fill" style="width:${mpP}%"></div></div></div>
+      <div class="bar-wrap"><div class="bar-row"><span>EXP</span><span>${m.exp}/${m.expNext}</span></div><div class="bar-track"><div class="exp-fill" style="width:${expP}%"></div></div></div>
+      <span class="status-chip ${m.status!=='normal'?m.status:''}">${SL[m.status]||m.status}</span>
+    </div>`;
   }).join('');
-
-  document.getElementById('floor-badge').textContent = `B${state.floor}F`;
+  document.getElementById('floor-badge').textContent = `B${S.floor}F`;
 }
 
-function applyStatusUpdate(statusData) {
-  if (!statusData || !Array.isArray(statusData.party)) return;
-  statusData.party.forEach(upd => {
-    const m = state.party.find(x => x.id === upd.id);
-    if (!m) return;
-    if (upd.maxHp !== undefined) m.maxHp = upd.maxHp;
-    if (upd.maxMp !== undefined) m.maxMp = upd.maxMp;
-    if (upd.hp    !== undefined) m.hp    = Math.max(0, Math.min(upd.hp, m.maxHp));
-    if (upd.mp    !== undefined) m.mp    = Math.max(0, Math.min(upd.mp, m.maxMp));
-    if (upd.status) m.status = upd.status;
+function updateBadges() {
+  document.getElementById('dot-levelup').style.display = S.party.some(m=>m.pendingPoints>0)?'block':'none';
+}
+
+function cardTap(id) {
+  const m = S.party.find(x=>x.id===id);
+  if (m && m.pendingPoints>0) openLevelUpModal(id);
+  else { eqActive=id; renderEqTabs(); renderEqContent(); openModal('modal-equip'); }
+}
+
+// ================================================================
+// STATUS APPLY
+// ================================================================
+function applyStatus(data) {
+  if (!data) return;
+  if (Array.isArray(data.party)) {
+    data.party.forEach(u => {
+      const m = S.party.find(x=>x.id===u.id);
+      if (!m) return;
+      if (u.hp !== undefined) m.hp = Math.max(0, u.hp);
+      if (u.status) m.status = u.status;
+    });
+  }
+  if (data.floor) S.floor = data.floor;
+  if (data.expGained && data.expGained>0) {
+    S.party.forEach(m => { if(m.status!=='dead') addExp(m, data.expGained); });
+  }
+  if (Array.isArray(data.itemsFound)) {
+    data.itemsFound.forEach(id => {
+      if (IDATA[id]) { S.sharedInventory.push(id); pushSys(`アイテム入手: ${IDATA[id].name}`); }
+    });
+  }
+  renderParty(); updateBadges();
+}
+
+// ================================================================
+// EXP & LEVEL UP
+// ================================================================
+function addExp(m, amt) {
+  m.exp += amt;
+  while (m.exp >= m.expNext) { m.exp -= m.expNext; levelUp(m); }
+}
+function levelUp(m) {
+  m.level++;
+  m.expNext = Math.floor(m.expNext * 1.4);
+  const j = JOBS[m.jobKey];
+  if (j) { Object.entries(j.auto).forEach(([k,v])=>m.stats[k]+=v); m.pendingPoints += j.pts; }
+  else m.pendingPoints += 3;
+  const d = calcDerived(m);
+  m.hp = d.maxHp; m.mp = d.maxMp;
+  pushSys(`${m.name}がレベル${m.level}にアップ！(LVボタンからステータスを割り振ろう)`);
+}
+
+// LEVEL UP MODAL
+let luActive = 0;
+let luTemp   = {};
+
+function openLevelUpModal(id) {
+  const members = S.party.filter(m=>m.pendingPoints>0);
+  if (!members.length) { pushSys('レベルアップ待ちのメンバーはいません。'); return; }
+  luActive = id !== undefined ? id : members[0].id;
+  luTemp = {};
+  S.party.forEach(m=>luTemp[m.id]={str:0,mag:0,vit:0,spd:0,lck:0});
+  renderLuTabs(); renderLuContent();
+  openModal('modal-lu');
+}
+
+function renderLuTabs() {
+  const members = S.party.filter(m=>m.pendingPoints>0);
+  document.getElementById('lu-tabs').innerHTML = members.map(m=>
+    `<button class="tab-btn ${m.id===luActive?'active':''}" onclick="luSwitchMember(${m.id},this)">${m.icon}${m.name}</button>`
+  ).join('');
+}
+function luSwitchMember(id, el) {
+  luActive = id;
+  document.querySelectorAll('#lu-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderLuContent();
+}
+function renderLuContent() {
+  const m = S.party.find(x=>x.id===luActive);
+  if (!m) return;
+  const tp = luTemp[m.id];
+  const spent = Object.values(tp).reduce((a,b)=>a+b,0);
+  const rem = m.pendingPoints - spent;
+  const SINFO = [
+    {k:'str',l:'力',   d:'攻撃力・物理ダメージ'},
+    {k:'mag',l:'魔力', d:'魔法攻撃・MPの最大値'},
+    {k:'vit',l:'体力', d:'HPの最大値・防御力'},
+    {k:'spd',l:'速度', d:'回避率・命中率'},
+    {k:'lck',l:'運',   d:'クリティカル・運全般'}
+  ];
+  const j = JOBS[m.jobKey];
+  document.getElementById('lu-content').innerHTML =
+    `<div class="lu-points-left">割り振り可能ポイント: <strong style="color:#c9a227;font-size:18px">${rem}</strong></div>
+    <button class="auto-btn" onclick="luAuto()">職業自動割り振り (${j?j.name:''}推奨)</button>
+    ${SINFO.map(s=>`<div class="lu-stat-row">
+      <span class="lu-stat-name">${s.l}</span>
+      <span class="lu-stat-desc">${s.d}</span>
+      <button class="lu-btn" onclick="luAdj('${s.k}',-1)" ${tp[s.k]<=0?'disabled':''}>-</button>
+      <span class="lu-stat-val">${m.stats[s.k]+tp[s.k]}</span>
+      <button class="lu-btn" onclick="luAdj('${s.k}',+1)" ${rem<=0?'disabled':''}>+</button>
+    </div>`).join('')}`;
+}
+function luAdj(k, d) {
+  const m = S.party.find(x=>x.id===luActive);
+  const tp = luTemp[m.id];
+  const spent = Object.values(tp).reduce((a,b)=>a+b,0);
+  const rem = m.pendingPoints - spent;
+  if (d>0 && rem<=0) return;
+  if (d<0 && tp[k]<=0) return;
+  tp[k]+=d; renderLuContent();
+}
+function luAuto() {
+  const m = S.party.find(x=>x.id===luActive);
+  const tp = luTemp[m.id];
+  Object.keys(tp).forEach(k=>tp[k]=0);
+  const j = JOBS[m.jobKey];
+  if (!j) return;
+  let rem = m.pendingPoints;
+  while (rem>0) {
+    const sorted = Object.entries(j.auto).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+    for (const [k] of sorted) { if(rem<=0) break; tp[k]++; rem--; }
+    if (!sorted.length) { tp['str']++; rem--; }
+  }
+  renderLuContent();
+}
+function confirmLevelUp() {
+  S.party.forEach(m => {
+    const tp = luTemp[m.id];
+    if (!tp) return;
+    Object.keys(tp).forEach(k=>m.stats[k]+=tp[k]);
+    const spent = Object.values(tp).reduce((a,b)=>a+b,0);
+    m.pendingPoints = Math.max(0, m.pendingPoints-spent);
+    const d = calcDerived(m);
+    m.hp=Math.min(m.hp,d.maxHp); m.mp=Math.min(m.mp,d.maxMp);
   });
-  if (statusData.floor) state.floor = statusData.floor;
-  renderParty();
+  closeModal('modal-lu'); renderParty(); updateBadges(); saveState();
 }
 
 // ================================================================
-//  MESSAGE MANAGEMENT
+// EQUIPMENT MODAL
 // ================================================================
-function pushNarratorMsg(text, save = true) {
-  const m = { type: 'narrator', text, ts: Date.now() };
-  state.messages.push(m);
-  appendMsgEl(m);
-  scrollBottom();
-  if (save) saveState();
+let eqActive = 0;
+let eqSlot   = null;
+
+function openEquipModal() { eqActive=0; renderEqTabs(); renderEqContent(); openModal('modal-equip'); }
+
+function renderEqTabs() {
+  document.getElementById('eq-tabs').innerHTML = S.party.map(m=>
+    `<button class="tab-btn ${m.id===eqActive?'active':''}" onclick="eqSwitch(${m.id},this)">${m.icon}${m.name}</button>`
+  ).join('');
 }
-function pushPlayerMsg(text) {
-  const m = { type: 'player', text, ts: Date.now() };
-  state.messages.push(m);
-  appendMsgEl(m);
-  scrollBottom();
-  saveState();
+function eqSwitch(id, el) {
+  eqActive=id;
+  document.querySelectorAll('#eq-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderEqContent();
 }
-function pushSysMsg(text) {
-  const m = { type: 'system', text, ts: Date.now() };
-  state.messages.push(m);
-  appendMsgEl(m);
-  scrollBottom();
+function renderEqContent() {
+  const m = S.party.find(x=>x.id===eqActive);
+  if (!m) return;
+  const d = calcDerived(m);
+  const slots = SLOT_KEYS.map(s=>{
+    const item = IDATA[m.equip && m.equip[s]];
+    return `<div class="equip-slot ${item?'':'empty'}" onclick="openItemSelect(${m.id},'${s}')">
+      <div class="equip-slot-label">${SLOT_LABELS[s]}</div>
+      <div class="equip-slot-item">${item?item.icon+' '+item.name:'── なし ──'}</div>
+      <div class="equip-slot-stats">${item?istatStr(item):''}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('eq-content').innerHTML =
+    `<div class="equip-grid">${slots}</div>
+    <div class="divider"></div>
+    <div class="form-label">派生ステータス</div>
+    <div class="stat-grid">
+      <div class="stat-row"><span class="stat-key">ATK攻撃力</span><span class="stat-val">${d.atk}</span></div>
+      <div class="stat-row"><span class="stat-key">DEF防御力</span><span class="stat-val">${d.def}</span></div>
+      <div class="stat-row"><span class="stat-key">MAT魔法攻</span><span class="stat-val">${d.matk}</span></div>
+      <div class="stat-row"><span class="stat-key">MDF魔法防</span><span class="stat-val">${d.mdef}</span></div>
+      <div class="stat-row"><span class="stat-key">HIT命中率</span><span class="stat-val">${d.hit}</span></div>
+      <div class="stat-row"><span class="stat-key">EVA回避率</span><span class="stat-val">${d.eva}</span></div>
+      <div class="stat-row"><span class="stat-key">CRT会心率</span><span class="stat-val">${d.crit}%</span></div>
+      <div class="stat-row"><span class="stat-key">MaxHP</span><span class="stat-val">${d.maxHp}</span></div>
+      <div class="stat-row"><span class="stat-key">MaxMP</span><span class="stat-val">${d.maxMp}</span></div>
+    </div>
+    <div class="divider"></div>
+    <div class="form-label">基本ステータス</div>
+    <div class="stat-grid">
+      <div class="stat-row"><span class="stat-key">力 STR</span><span class="stat-val">${m.stats.str}</span></div>
+      <div class="stat-row"><span class="stat-key">魔力 MAG</span><span class="stat-val">${m.stats.mag}</span></div>
+      <div class="stat-row"><span class="stat-key">体力 VIT</span><span class="stat-val">${m.stats.vit}</span></div>
+      <div class="stat-row"><span class="stat-key">速度 SPD</span><span class="stat-val">${m.stats.spd}</span></div>
+      <div class="stat-row"><span class="stat-key">運  LCK</span><span class="stat-val">${m.stats.lck}</span></div>
+    </div>`;
 }
 
+function istatStr(item) {
+  const K={str:'力',mag:'魔',vit:'体',spd:'速',lck:'運',atk:'ATK',def:'DEF',matk:'MAT',mdef:'MDF',hit:'命',eva:'回',hp:'HP',mp:'MP'};
+  return Object.entries(K).filter(([k])=>item[k]).map(([k,l])=>`${l}+${item[k]}`).join(' ');
+}
+
+function openItemSelect(memberId, slot) {
+  eqActive = memberId; eqSlot = slot;
+  const m = S.party.find(x=>x.id===memberId);
+  const curId = m.equip && m.equip[slot];
+  const owned = [];
+  if (curId && IDATA[curId]) owned.push(IDATA[curId]);
+  S.sharedInventory.filter(id=>IDATA[id]&&IDATA[id].slot===slot&&id!==curId)
+    .forEach(id=>owned.push(IDATA[id]));
+
+  document.getElementById('item-modal-title').textContent = `${SLOT_LABELS[slot]} — ${m.name}`;
+  document.getElementById('item-modal-list').innerHTML = owned.length
+    ? owned.map(item=>`<div class="item-row ${curId===item.id?'equipped':''}" onclick="equipItem('${item.id}')">
+        <div><div class="item-name">${item.icon} ${item.name} ${curId===item.id?'<span style="color:#c9a227;font-size:10px">装備中</span>':''}</div>
+        <div class="item-stats">${istatStr(item)}</div></div>
+        <div class="item-action">${curId===item.id?'✓':'装備'}</div>
+      </div>`).join('')
+    : `<div style="text-align:center;color:#5a4a3a;font-size:13px;padding:16px">このスロット用のアイテムがありません</div>`;
+  openModal('modal-item');
+}
+
+function equipItem(itemId) {
+  const m = S.party.find(x=>x.id===eqActive);
+  if (!m) return;
+  const oldId = m.equip[eqSlot];
+  if (oldId && S.sharedInventory.includes(itemId)) {
+    S.sharedInventory = S.sharedInventory.filter(id=>id!==itemId);
+  }
+  if (oldId && oldId!==itemId && !S.sharedInventory.includes(oldId)) {
+    S.sharedInventory.push(oldId);
+  }
+  m.equip[eqSlot] = itemId;
+  closeModal('modal-item'); renderEqContent(); renderParty(); saveState();
+}
+
+function unequipSlot() {
+  const m = S.party.find(x=>x.id===eqActive);
+  if (!m || !eqSlot) return;
+  const oldId = m.equip[eqSlot];
+  if (oldId && !S.sharedInventory.includes(oldId)) S.sharedInventory.push(oldId);
+  m.equip[eqSlot] = null;
+  closeModal('modal-item'); renderEqContent(); renderParty(); saveState();
+}
+
+// ================================================================
+// MESSAGES
+// ================================================================
 function mdToHtml(text) {
   return esc(text)
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')   // **bold**
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')                  // *italic*
-    .replace(/`([^`]+)`/g, '<code>$2</code>')                // `code`
-    .replace(/\n/g, '<br>');
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/\n/g,'<br>');
 }
-
-function appendMsgEl(m) {
-  const area  = document.getElementById('chat-area');
-  const outer = document.createElement('div');
-  outer.className = `msg ${m.type}`;
-
-  if (m.type === 'narrator') {
-    outer.innerHTML = `<div class="msg-sender">📖 ゲームマスター</div>
-      <div class="msg-bubble">${mdToHtml(m.text)}</div>`;
-  } else if (m.type === 'player') {
-    outer.innerHTML = `<div class="msg-sender">🛡️ パーティ</div>
-      <div class="msg-bubble">${mdToHtml(m.text)}</div>`;
-  } else {
-    outer.innerHTML = `<div class="msg-bubble">${esc(m.text)}</div>`;
-  }
-  area.appendChild(outer);
+function pushNarrator(text, save=true) {
+  const m={type:'narrator',text,ts:Date.now()};
+  S.messages.push(m); appendMsg(m); scrollBot();
+  if(save) saveState();
 }
-
+function pushPlayer(text) {
+  const m={type:'player',text,ts:Date.now()};
+  S.messages.push(m); appendMsg(m); scrollBot(); saveState();
+}
+function pushSys(text) {
+  const m={type:'system',text,ts:Date.now()};
+  S.messages.push(m); appendMsg(m); scrollBot();
+}
+function appendMsg(m) {
+  const area=document.getElementById('chat-area');
+  const el=document.createElement('div');
+  el.className=`msg ${m.type}`;
+  if(m.type==='narrator')      el.innerHTML=`<div class="msg-sender">ゲームマスター</div><div class="msg-bubble">${mdToHtml(m.text)}</div>`;
+  else if(m.type==='player')   el.innerHTML=`<div class="msg-sender">パーティ</div><div class="msg-bubble">${mdToHtml(m.text)}</div>`;
+  else                         el.innerHTML=`<div class="msg-bubble">${esc(m.text)}</div>`;
+  area.appendChild(el);
+}
 function renderAllMessages() {
-  const area = document.getElementById('chat-area');
-  area.innerHTML = '';
-  state.messages.forEach(appendMsgEl);
-  scrollBottom();
+  document.getElementById('chat-area').innerHTML='';
+  S.messages.forEach(appendMsg); scrollBot();
 }
+function scrollBot(){ const a=document.getElementById('chat-area'); setTimeout(()=>a.scrollTop=a.scrollHeight,60); }
 
-function scrollBottom() {
-  const area = document.getElementById('chat-area');
-  setTimeout(() => { area.scrollTop = area.scrollHeight; }, 60);
-}
-
-// ================================================================
-//  TYPING INDICATOR
-// ================================================================
-let typingEl = null;
-function showTyping() {
-  const area = document.getElementById('chat-area');
-  typingEl = document.createElement('div');
-  typingEl.className = 'typing-wrap';
-  typingEl.innerHTML = `<div class="msg-sender">📖 ゲームマスター</div>
-    <div class="typing-bubble">
-      <div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>
-    </div>`;
-  area.appendChild(typingEl);
-  scrollBottom();
-}
-function hideTyping() {
-  if (typingEl) { typingEl.remove(); typingEl = null; }
-}
+// TYPING
+let typingEl=null;
+function showTyping(){ const area=document.getElementById('chat-area'); typingEl=document.createElement('div'); typingEl.className='typing-wrap'; typingEl.innerHTML=`<div class="msg-sender">ゲームマスター</div><div class="typing-bubble"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`; area.appendChild(typingEl); scrollBot(); }
+function hideTyping(){ if(typingEl){typingEl.remove();typingEl=null;} }
 
 // ================================================================
-//  API CALL
+// API
 // ================================================================
 async function sendMessage() {
-  const inp  = document.getElementById('chat-input');
-  const text = inp.value.trim();
-  if (!text || state.loading) return;
-
-  if (!state.settings.apiKey) {
-    pushSysMsg('⚠️ APIキーが未設定です。⚙️ボタンから設定してください。');
-    openSettings();
-    return;
-  }
-
-  inp.value = '';
-  autoResize(inp);
-  pushPlayerMsg(text);
-  setLoading(true);
-
+  const inp=document.getElementById('chat-input');
+  const text=inp.value.trim();
+  if(!text||S.loading) return;
+  if(!S.settings.apiKey){ pushSys('APIキー未設定です。⚙から設定してください。'); openSettings(); return; }
+  inp.value=''; autoResize(inp);
+  pushPlayer(text); setLoading(true);
   try {
-    const raw         = await callApi(text);
+    const raw=await callApi(text);
     hideTyping();
-    const { story, statusData } = parseAiResponse(raw);
-    pushNarratorMsg(story);
-    if (statusData) applyStatusUpdate(statusData);
+    const {story,statusData}=parseResp(raw);
+    if(story) pushNarrator(story);
+    if(statusData) applyStatus(statusData);
     saveState();
-  } catch (err) {
+  } catch(e) {
     hideTyping();
-    pushSysMsg(`⚠️ エラー: ${err.message}`);
+    pushSys(`エラー: ${e.message}`);
   }
-
   setLoading(false);
 }
 
-function getEndpointBase() {
-  const s = state.settings;
-  if (s.provider === 'custom') return (s.customUrl || '').replace(/\/$/, '');
-  return PROVIDER_URLS[s.provider] || PROVIDER_URLS.openrouter;
+function getBase() {
+  const s=S.settings;
+  if(s.provider==='custom') return (s.customUrl||'').replace(/\/$/,'');
+  if(s.provider==='openrouter') return 'https://openrouter.ai/api/v1';
+  return 'https://api.openai.com/v1';
 }
 
 async function callApi(userText) {
   showTyping();
-
-  // Build history (last 12 user/assistant turns for context)
-  const histMsgs = state.messages
-    .filter(m => m.type === 'player' || m.type === 'narrator')
-    .slice(-12)
-    .map(m => ({ role: m.type === 'player' ? 'user' : 'assistant', content: m.text }));
-
-  const body = {
-    model: state.settings.model,
-    max_tokens: 1200,
-    temperature: 0.88,
-    messages: [
-      { role: 'system', content: state.settings.systemPrompt },
-      ...histMsgs,
-      { role: 'user', content: userText }
-    ]
-  };
-
-  const headers = {
-    'Content-Type':  'application/json',
-    'Authorization': `Bearer ${state.settings.apiKey}`,
-    'HTTP-Referer':  location.href,
-    'X-Title':       'Dungeon Chronicles RPG'
-  };
-
-  const res = await fetch(`${getEndpointBase()}/chat/completions`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body)
-  });
-
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try {
-      const d = await res.json();
-      // OpenRouter returns errors in various shapes
-      msg = d.error?.message
-         || d.error?.code
-         || d.message
-         || JSON.stringify(d);
-    } catch (_) {}
-    throw new Error(msg);
-  }
-
-  const data = await res.json();
-  // Check for error inside a 200 response (OpenRouter sometimes does this)
-  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-  return data.choices?.[0]?.message?.content || '';
+  const pSummary = S.party.map(m=>{ const d=calcDerived(m); return `ID${m.id}(${m.name})Lv${m.level} HP:${m.hp}/${d.maxHp} MP:${m.mp}/${d.maxMp} 状態:${m.status} ATK:${d.atk} DEF:${d.def} MAT:${d.matk} HIT:${d.hit} EVA:${d.eva}`; }).join('\n');
+  const hist = S.messages.filter(m=>m.type==='player'||m.type==='narrator').slice(-10).map(m=>({role:m.type==='player'?'user':'assistant',content:m.text}));
+  const sysPlusState = S.settings.systemPrompt+`\n\n現在のパーティ状態:\n${pSummary}\nフロア: B${S.floor}F`;
+  const body={model:S.settings.model,max_tokens:1200,temperature:0.88,messages:[{role:'system',content:sysPlusState},...hist,{role:'user',content:userText}]};
+  const headers={'Content-Type':'application/json','Authorization':`Bearer ${S.settings.apiKey}`,'HTTP-Referer':location.href,'X-Title':'Dungeon Chronicles'};
+  const res=await fetch(`${getBase()}/chat/completions`,{method:'POST',headers,body:JSON.stringify(body)});
+  if(!res.ok){ let msg=`HTTP ${res.status}`; try{const d=await res.json();msg=d.error?.message||d.message||msg;}catch(_){} throw new Error(msg); }
+  const data=await res.json();
+  if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
+  return data.choices?.[0]?.message?.content||'';
 }
 
-function parseAiResponse(raw) {
-  let statusData = null;
-
-  // Step 1: strip ALL fenced code blocks (even unclosed ones) and try to parse JSON from them
-  const fenceRe = /```(?:json)?[ \t]*((?:[^`]|`(?!``))*)/g;
-  let fenceMatch;
-  let cleaned = raw;
-  while ((fenceMatch = fenceRe.exec(raw)) !== null) {
-    const block = fenceMatch[1].replace(/```$/, '').trim();
-    if (!statusData) {
-      try { const p = JSON.parse(block); if (p.status) statusData = p.status; } catch(_) {}
-    }
-  }
-  // Remove all fenced blocks from story (including unclosed ones)
-  cleaned = raw.replace(/```(?:json)?[\s\S]*?(?:```|$)/g, '').trim();
-
-  // Step 2: if no status yet, look for bare JSON object containing "status"
-  if (!statusData) {
-    // Find first { that leads to a parseable object with .status
-    let depth = 0, start = -1;
-    for (let i = 0; i < cleaned.length; i++) {
-      if (cleaned[i] === '{') { if (depth === 0) start = i; depth++; }
-      else if (cleaned[i] === '}') {
-        depth--;
-        if (depth === 0 && start !== -1) {
-          try {
-            const p = JSON.parse(cleaned.slice(start, i + 1));
-            if (p.status) {
-              statusData = p.status;
-              cleaned = (cleaned.slice(0, start) + cleaned.slice(i + 1)).trim();
-              break;
-            }
-          } catch(_) {}
-          start = -1;
-        }
-      }
-    }
-  }
-
-  // Step 3: also strip any remaining lines that look like raw JSON syntax artifacts
-  const story = cleaned
-    .replace(/^\s*[\[\]{}].*$/gm, '')   // lines that are just JSON brackets
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-
-  return { story, statusData };
+function parseResp(raw) {
+  let statusData=null;
+  // Extract from fenced blocks
+  const fr=/```(?:json)?[ \t]*([\s\S]*?)(?:```|$)/g;
+  let fm; while((fm=fr.exec(raw))!==null){ try{ const p=JSON.parse(fm[1].trim()); if(p.status){statusData=p.status;} }catch(_){} }
+  let cleaned=raw.replace(/```(?:json)?[\s\S]*?(?:```|$)/g,'').trim();
+  // Bare JSON scan
+  if(!statusData){ let depth=0,start=-1; for(let i=0;i<cleaned.length;i++){ if(cleaned[i]==='{'){if(!depth)start=i;depth++;}else if(cleaned[i]==='}'){ depth--; if(!depth&&start!==-1){ try{const p=JSON.parse(cleaned.slice(start,i+1));if(p.status){statusData=p.status;cleaned=(cleaned.slice(0,start)+cleaned.slice(i+1)).trim();break;}}catch(_){} start=-1; } } } }
+  const story=cleaned.replace(/^[ \t]*[{}\[\],].*$/gm,'').replace(/\n{3,}/g,'\n\n').trim();
+  return {story,statusData};
 }
 
-function setLoading(v) {
-  state.loading = v;
-  document.getElementById('btn-send').disabled = v;
-}
-
-function quickAction(action) {
-  const inp = document.getElementById('chat-input');
-  inp.value = action;
-  autoResize(inp);
-  sendMessage();
-}
+function setLoading(v){ S.loading=v; document.getElementById('btn-send').disabled=v; }
+function quickAction(a){ const inp=document.getElementById('chat-input'); inp.value=a; autoResize(inp); sendMessage(); }
 
 // ================================================================
-//  INPUT UTILS
-// ================================================================
-function handleKeyDown(e) {
-  // Desktop Enter = send; Shift+Enter = newline; mobile always newline
-  const isMobile = 'ontouchstart' in window;
-  if (!isMobile && e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-}
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 110) + 'px';
-}
-
-// ================================================================
-//  SETTINGS MODAL
+// SETTINGS MODAL
 // ================================================================
 function openSettings() {
-  const s = state.settings;
-  document.getElementById('sel-provider').value    = s.provider;
-  document.getElementById('inp-custom-url').value  = s.customUrl;
-  document.getElementById('inp-apikey').value      = s.apiKey;
-  document.getElementById('inp-model').value       = s.model;
-  document.getElementById('inp-sysprompt').value   = s.systemPrompt;
+  const s=S.settings;
+  document.getElementById('sel-provider').value   = s.provider;
+  document.getElementById('inp-custom-url').value = s.customUrl||'';
+  document.getElementById('inp-apikey').value     = s.apiKey;
+  document.getElementById('inp-model').value      = s.model;
+  document.getElementById('inp-sysprompt').value  = s.systemPrompt;
   onProviderChange();
-  renderPartyConfigForm();
-  document.getElementById('modal-overlay').classList.remove('hidden');
+  renderPartyCfg();
+  openModal('modal-settings');
 }
-
-function closeSettings() {
-  document.getElementById('modal-overlay').classList.add('hidden');
-}
-
-function handleOverlayClick(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeSettings();
-}
-
 function onProviderChange() {
-  const v = document.getElementById('sel-provider').value;
-  document.getElementById('grp-custom').style.display = v === 'custom' ? 'block' : 'none';
-  const hints = {
-    openrouter: '例: anthropic/claude-3-haiku, meta-llama/llama-3.3-70b-instruct',
-    openai:     '例: gpt-4o, gpt-4o-mini, gpt-3.5-turbo',
-    custom:     'ご利用のモデル名を入力'
-  };
-  document.getElementById('model-hint').textContent = hints[v] || '';
+  const v=document.getElementById('sel-provider').value;
+  document.getElementById('grp-custom').style.display=v==='custom'?'block':'none';
 }
-
-function renderPartyConfigForm() {
-  const list = document.getElementById('party-config-list');
-  list.innerHTML = state.party.map((m, i) => `
-    <div class="party-row">
-      <input type="text" class="f-input party-row-icon" id="pcfg-icon-${i}" value="${esc(m.icon)}" maxlength="4">
+function renderPartyCfg() {
+  document.getElementById('party-config-list').innerHTML = S.party.map((m,i)=>`
+    <div class="party-cfg-row">
+      <input type="text" class="f-input" style="width:44px" id="pcfg-icon-${i}" value="${esc(m.icon)}" maxlength="4">
       <input type="text" class="f-input" id="pcfg-name-${i}" value="${esc(m.name)}" placeholder="名前">
-      <input type="number" class="f-input" id="pcfg-maxhp-${i}" value="${m.maxHp}" min="1" max="9999" style="width:72px;" title="MaxHP">
-      <input type="number" class="f-input" id="pcfg-maxmp-${i}" value="${m.maxMp}" min="0" max="9999" style="width:72px;" title="MaxMP">
+      <select class="f-input" style="width:90px" id="pcfg-job-${i}">
+        ${JOB_KEYS.map(k=>`<option value="${k}" ${m.jobKey===k?'selected':''}>${JOBS[k].name}</option>`).join('')}
+      </select>
     </div>`).join('');
 }
-
 function saveSettings() {
-  // Gather party config
-  state.party.forEach((m, i) => {
-    const icon  = document.getElementById(`pcfg-icon-${i}`)?.value.trim();
-    const name  = document.getElementById(`pcfg-name-${i}`)?.value.trim();
-    const maxHp = parseInt(document.getElementById(`pcfg-maxhp-${i}`)?.value) || m.maxHp;
-    const maxMp = parseInt(document.getElementById(`pcfg-maxmp-${i}`)?.value) || m.maxMp;
-    if (icon) m.icon = icon;
-    if (name) m.name = name;
-    m.maxHp = maxHp;
-    m.maxMp = maxMp;
-    m.hp = Math.min(m.hp, maxHp);
-    m.mp = Math.min(m.mp, maxMp);
+  S.party.forEach((m,i)=>{
+    const icon=document.getElementById(`pcfg-icon-${i}`)?.value.trim();
+    const name=document.getElementById(`pcfg-name-${i}`)?.value.trim();
+    const jobKey=document.getElementById(`pcfg-job-${i}`)?.value;
+    if(icon) m.icon=icon;
+    if(name) m.name=name;
+    if(jobKey) m.jobKey=jobKey;
   });
-
-  state.settings = {
-    provider:     document.getElementById('sel-provider').value,
-    customUrl:    document.getElementById('inp-custom-url').value.trim(),
-    apiKey:       document.getElementById('inp-apikey').value.trim(),
-    model:        document.getElementById('inp-model').value.trim() || DEFAULT_SETTINGS.model,
-    systemPrompt: document.getElementById('inp-sysprompt').value || DEFAULT_SYSPROMPT
+  S.settings={
+    provider:    document.getElementById('sel-provider').value,
+    customUrl:   document.getElementById('inp-custom-url').value.trim(),
+    apiKey:      document.getElementById('inp-apikey').value.trim(),
+    model:       document.getElementById('inp-model').value.trim()||DEFAULT_SETTINGS.model,
+    systemPrompt:document.getElementById('inp-sysprompt').value||buildDefaultPrompt()
   };
-
-  renderParty();
-  saveState();
-  closeSettings();
-
-  if (state.settings.apiKey) {
-    pushSysMsg('✅ 設定を保存しました。冒険を続けよう！');
-  } else {
-    pushSysMsg('⚠️ APIキーが未入力です。設定から入力してください。');
-  }
+  renderParty(); saveState(); closeModal('modal-settings');
+  pushSys(S.settings.apiKey?'設定を保存しました。':'APIキーが未入力です。');
 }
+function confirmReset(){ if(confirm('本当にリセットしますか？')){ localStorage.removeItem(STORAGE_KEY); location.reload(); } }
 
-function confirmReset() {
-  if (confirm('本当にリセットしますか？\nすべての進行データが削除されます。')) {
-    localStorage.removeItem(STORAGE_KEY);
-    location.reload();
-  }
+// ================================================================
+// MODAL UTILS
+// ================================================================
+function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+function overlayClick(e, id){ if(e.target.id===id) closeModal(id); }
+
+function switchTab(tab, el, group) {
+  const prefix = group==='settings'?'stab':'';
+  const tabs   = group==='settings'?['api','party','sys']:[];
+  if(tabs.length){ tabs.forEach(t=>{ const el2=document.getElementById(`stab-${t}`); if(el2) el2.style.display=t===tab?'block':'none'; }); }
+  el.closest('.tab-bar').querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
 }
 
 // ================================================================
-//  LOCAL STORAGE
+// STORAGE
 // ================================================================
 function saveState() {
-  try {
-    const data = {
-      party:    state.party,
-      messages: state.messages.slice(-60),
-      floor:    state.floor,
-      settings: state.settings
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (_) {}
+  try{ localStorage.setItem(STORAGE_KEY,JSON.stringify({party:S.party,messages:S.messages.slice(-60),floor:S.floor,settings:S.settings,sharedInventory:S.sharedInventory})); }catch(_){}
 }
-
 function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const d = JSON.parse(raw);
-    if (Array.isArray(d.party)    && d.party.length)    state.party    = d.party;
-    if (Array.isArray(d.messages) && d.messages.length) state.messages = d.messages;
-    if (d.floor)    state.floor    = d.floor;
-    if (d.settings) state.settings = { ...DEFAULT_SETTINGS, ...d.settings };
-  } catch (_) {}
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const d=JSON.parse(raw);
+    if(Array.isArray(d.party)&&d.party.length) S.party=d.party;
+    if(Array.isArray(d.messages)&&d.messages.length) S.messages=d.messages;
+    if(d.floor) S.floor=d.floor;
+    if(d.settings) S.settings={...DEFAULT_SETTINGS,...d.settings};
+    if(d.sharedInventory) S.sharedInventory=d.sharedInventory;
+    // Migrate old saves
+    S.party.forEach(m=>{
+      if(!m.stats) m.stats={str:8,mag:5,vit:8,spd:6,lck:5};
+      if(!m.equip) m.equip={rhand:null,lhand:null,head:null,armor:null,feet:null,acc:null};
+      if(!m.jobKey) m.jobKey=JOB_KEYS[m.id]||'warrior';
+      if(m.pendingPoints===undefined) m.pendingPoints=0;
+      if(m.level===undefined) m.level=1;
+      if(m.exp===undefined) m.exp=0;
+      if(m.expNext===undefined) m.expNext=100;
+    });
+  }catch(_){}
 }
 
 // ================================================================
-//  SERVICE WORKER
+// INPUT UTILS
 // ================================================================
-function registerSW() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  }
-}
+function handleKeyDown(e){ if(!('ontouchstart' in window)&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
+function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,110)+'px'; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ================================================================
-//  UTILITY
-// ================================================================
-function esc(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-// ================================================================
-//  BOOT
-// ================================================================
 init();
 </script>
 
