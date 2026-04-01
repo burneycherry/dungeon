@@ -165,6 +165,21 @@ textarea.finput{resize:vertical;line-height:1.5}
 .service-name{font-family:'IM Fell English',serif;font-size:14px;color:#c8e8d0}
 .service-cost{font-size:12px;color:#c9a227}
 .service-desc{font-size:11px;color:#4a6a5a;margin-top:2px}
+/* BATTLE PANEL */
+#battle-panel{flex-shrink:0;background-color:#0c0c18;border-bottom:1px solid #3a2a1a;padding:6px 8px;display:none}
+#battle-panel.active{display:block}
+.battle-chars{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:6px}
+.battle-char-btn{background-color:#14121e;border:1px solid #2e2040;border-radius:7px;padding:5px 4px;cursor:pointer;-webkit-tap-highlight-color:transparent;text-align:center}
+.battle-char-btn:active{background-color:#1e1c30}
+.battle-char-btn.dead-char{opacity:.35;cursor:default;pointer-events:none}
+.battle-char-btn.selected{border-color:#c9a227;background-color:#1a1828}
+.bc-name{font-size:9px;color:#8a7a6a;margin-bottom:2px}
+.bc-act{font-size:12px;color:#c9a227;font-family:'IM Fell English',serif}
+.battle-confirm-row{display:flex;gap:5px}
+.battle-confirm{flex:1;background:linear-gradient(140deg,#6a1010,#c72222);border:none;border-radius:8px;color:#fff;font-family:'IM Fell English',serif;font-size:14px;padding:9px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.battle-confirm:active{opacity:.8}
+.battle-flee{background:none;border:1px solid #441a1a;border-radius:8px;color:#883333;font-family:'IM Fell English',serif;font-size:13px;padding:9px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.battle-flee:active{background-color:#1a1010}
 /* RARITY COLORS */
 .rarity-common{color:#d4a84b}.rarity-uncommon{color:#44aadd}.rarity-rare{color:#9966dd}.rarity-legendary{color:#dd8822}
 /* PARTY CFG */
@@ -197,6 +212,16 @@ textarea.finput{resize:vertical;line-height:1.5}
   <div id="chat-area"></div>
 
   <!-- QUICK BAR -->
+
+  <!-- BATTLE PANEL (shown during combat) -->
+
+  <div id="battle-panel">
+    <div class="battle-chars" id="battle-chars-grid"></div>
+    <div class="battle-confirm-row">
+      <button class="battle-confirm" id="battle-confirm-btn">⚔️ 行動確定！</button>
+      <button class="battle-flee" id="battle-flee-btn">💨 逃走</button>
+    </div>
+  </div>
 
   <div id="quick-bar"></div>
 
@@ -467,16 +492,15 @@ const PROV_URL={openrouter:'https://openrouter.ai/api/v1',openai:'https://api.op
 let G={
   party: JK.map((j,i)=>makeMember(j,i)),
   messages:[],
-  floor:1,
-  maxFloor:1,
-  gold:0,
-  inTown:false,
-  loading:false,
+  floor:1, maxFloor:1,
+  gold:0, inTown:false, loading:false,
   cfg:{...DEFAULT_CFG},
-  // Shared bag: [{type:'equip'|'consumable', id, identified, qty}]
-  bag:[],
-  // Unidentified items: stored as {uid, realId, slot, icon, r}
-  nextUid:1
+  bag:[], nextUid:1,
+  // Phase system
+  phase:'explore',  // explore | battle | treasure | stairs | transfer | town
+  stairsDepth:0,    // floor depth of found stairs
+  battleSel:{0:'攻撃',1:'魔法',2:'回復',3:'攻撃'},  // per-char battle action
+  battleActIdx:{0:0,1:0,2:0,3:0}
 };
 
 function buildSysPrompt(){
@@ -518,6 +542,7 @@ function buildSysPrompt(){
     "expGained":0,
     "goldGained":0,
     "floorDown":0,
+    "stairsFound":false,
     "transferCircleFound":false,
     "itemsDropped":[]
   }
@@ -526,7 +551,14 @@ function buildSysPrompt(){
 
 event:exploration/battle/treasure/boss/rest/trap
 status:normal/poisoned/burned/frozen/stunned/dead
-itemsDropped例:["steel_sword","potion",{"id":"frost_blade","unidentified":true}]`;
+stairsFound:true/false (階段を発見したらtrue)
+itemsDropped例:["steel_sword","potion",{"id":"frost_blade","unidentified":true}]
+
+【フェーズ別ルール】
+- 移動中(exploration):敵・宝箱・階段・転移陣などをランダムに発生させる
+- 戦闘(battle):プレイヤーが行動を選択するまで待つ。行動は【行動】の形式で来る
+- 宝箱(treasure):開け方によってドロップ内容を変える
+- 階段発見時:stairsFoundをtrueにする（floorDownはプレイヤーが降りると告げた時のみ）`;
 }
 
 // ================================================================
@@ -564,20 +596,92 @@ function updateHdr(){
   gd.textContent=`G: ${G.gold.toLocaleString()}`;
 }
 
-const DUNGEON_ACTIONS=[
-  ['周囲を探索する','探索'],['前進する','前進'],['敵に攻撃する','攻撃'],
-  ['魔法を詠唱する','魔法'],['回復する','回復'],['宝箱を調べる','宝箱'],
-  ['逃げる！','逃走'],['休憩する','休憩'],['階段を降りる','降下'],
-];
-const TOWN_ACTIONS=[
-  ['宿屋で休む','宿屋'],['神殿で蘇生を頼む','神殿'],['道具屋へ行く','道具屋'],
-  ['武器屋へ行く','武器屋'],['アイテムを鑑定してもらう','鑑定'],['ダンジョンへ戻る','出発'],
-];
+// PHASE-BASED QUICK ACTIONS
+const PHASE_ACTS = {
+  explore:  [['周囲を探索する','🔍 探索'],['前進する','↑ 前進'],['右へ進む','→ 右'],['左へ進む','← 左'],['後退する','↓ 後退'],['休憩する','🏕 休憩']],
+  treasure: [['宝箱を慎重に開ける','🔓 慎重に開ける'],['宝箱を素早く開ける','📦 素早く開ける'],['宝箱を放置する','🚫 放置']],
+  stairs:   [['階段を降りる','▼ 降りる'],['階段を無視して探索を続ける','✖ 無視']],
+  transfer: [['転移陣を使って街へ帰還する','✨ 街へ転移'],['転移陣を無視して探索を続ける','✖ 無視']],
+  town:     [['宿屋で休む','🏨 宿屋'],['神殿で蘇生を頼む','⛪ 神殿'],['鑑定屋へ行く','🔮 鑑定'],['武器屋へ行く','⚔ 店'],['ダンジョンへ戻る','🚪 出発']]
+};
+const BATTLE_ACTS = ['攻撃','魔法','防御','道具','---'];
 
 function updateQuickBar(){
-  const bar=document.getElementById('quick-bar');
-  const acts=G.inTown?TOWN_ACTIONS:DUNGEON_ACTIONS;
-  bar.innerHTML=acts.map(([a,l])=>`<button class="qbtn ${G.inTown?'town-btn':''}" onclick="quickAct(${JSON.stringify(a)})">${l}</button>`).join('');
+  const bar = document.getElementById('quick-bar');
+  const bp  = document.getElementById('battle-panel');
+
+  if(G.phase==='battle'){
+    bar.innerHTML='';
+    bp.classList.add('active');
+    renderBattlePanel();
+    return;
+  }
+  bp.classList.remove('active');
+
+  const phaseKey = G.inTown?'town':G.phase;
+  const acts = PHASE_ACTS[phaseKey] || PHASE_ACTS.explore;
+  bar.innerHTML = acts.map(([,l],i)=>
+    `<button class="qbtn${G.inTown?' town-btn':''}" data-idx="${i}">${l}</button>`
+  ).join('');
+  // Use event delegation to avoid quote escaping bug
+  bar.onclick = (e)=>{
+    const btn = e.target.closest('[data-idx]');
+    if(!btn) return;
+    const act = acts[parseInt(btn.dataset.idx)][0];
+    handlePhaseAct(act);
+  };
+}
+
+function renderBattlePanel(){
+  const grid = document.getElementById('battle-chars-grid');
+  const ACTS_ICON = {攻撃:'⚔️',魔法:'✨',防御:'🛡',道具:'🎒','---':'💀'};
+  grid.innerHTML = G.party.map(m=>{
+    const dead = m.status==='dead'||m.hp<=0;
+    const act  = dead?'---':G.battleSel[m.id]||'攻撃';
+    return `<div class="battle-char-btn ${dead?'dead-char':''}" data-mid="${m.id}">
+      <div class="bc-name">${m.icon}${m.name}</div>
+      <div class="bc-act">${ACTS_ICON[act]||''} ${act}</div>
+    </div>`;
+  }).join('');
+  grid.onclick = (e)=>{
+    const btn = e.target.closest('[data-mid]');
+    if(!btn) return;
+    const mid = parseInt(btn.dataset.mid);
+    const m   = G.party.find(x=>x.id===mid);
+    if(!m||m.status==='dead'||m.hp<=0) return;
+    // Cycle through actions
+    const avail=['攻撃','魔法','防御','道具'];
+    const cur = G.battleSel[mid]||'攻撃';
+    const ni  = (avail.indexOf(cur)+1)%avail.length;
+    G.battleSel[mid] = avail[ni];
+    renderBattlePanel();
+  };
+  // Confirm & flee buttons
+  document.getElementById('battle-confirm-btn').onclick = confirmBattleAction;
+  document.getElementById('battle-flee-btn').onclick = ()=>{
+    G.phase='explore';updateQuickBar();
+    const inp=document.getElementById('chat-input');inp.value='逃走を試みる！';autoResize(inp);sendMsg();
+  };
+}
+
+function confirmBattleAction(){
+  const parts = G.party.filter(m=>m.status!=='dead'&&m.hp>0).map(m=>`${m.name}:${G.battleSel[m.id]||'攻撃'}`);
+  const text  = `【行動】${parts.join('、')}`;
+  G.phase='explore';
+  updateQuickBar();
+  const inp=document.getElementById('chat-input');inp.value=text;autoResize(inp);sendMsg();
+}
+
+function handlePhaseAct(action){
+  // Town special actions
+  if(G.inTown){
+    if(action==='宿屋で休む'){townInn();return;}
+    if(action==='神殿で蘇生を頼む'){townTemple();return;}
+    if(action==='鑑定屋へ行く'){closeM('m-tserv');showTownMenu();openM('m-tserv');return;}
+    if(action==='武器屋へ行く'){townShop();openM('m-tserv');return;}
+    if(action==='ダンジョンへ戻る'){leaveForDungeon();return;}
+  }
+  const inp=document.getElementById('chat-input');inp.value=action;autoResize(inp);sendMsg();
 }
 
 function updateBadges(){
@@ -617,6 +721,29 @@ function cardTap(id){
 // ================================================================
 function applyStatus(data){
   if(!data) return;
+
+  // ── Phase transition from AI event ──
+  const ev = (data.event||'exploration').toLowerCase();
+  if(!G.inTown){
+    if(ev==='battle'||ev==='boss'){
+      G.phase='battle';
+      // Init battle selections for alive members
+      G.party.forEach(m=>{
+        if(m.status!=='dead'&&m.hp>0){
+          const j=JOBS[m.jobKey];
+          if(j&&j.name==='魔法使い') G.battleSel[m.id]='魔法';
+          else if(j&&j.name==='僧侶') G.battleSel[m.id]='回復';
+          else if(j&&j.name==='盗賊') G.battleSel[m.id]='攻撃';
+          else G.battleSel[m.id]='攻撃';
+        }
+      });
+    } else if(ev==='treasure'){ G.phase='treasure';
+    } else if(ev==='exploration'||ev==='rest'||ev==='trap'){ G.phase='explore';
+    }
+    if(data.stairsFound)  G.phase='stairs';
+    if(data.transferCircleFound) G.phase='transfer';
+  }
+
   if(Array.isArray(data.party)){
     data.party.forEach(u=>{
       const m=G.party.find(x=>x.id===u.id);
@@ -654,22 +781,10 @@ function applyStatus(data){
 
   // Transfer circle
   if(data.transferCircleFound){
-    pushSys('✨ 転移陣を発見！街へ戻れます。（「街へ戻る」ボタンまたは転移陣を使うと告げてください）');
-    // Add town return btn to quick bar supplement
-    if(!G.inTown){
-      const bar=document.getElementById('quick-bar');
-      if(!bar.querySelector('.portal-btn')){
-        const btn=document.createElement('button');
-        btn.className='qbtn portal-btn';
-        btn.style.color='#22aa55';btn.style.borderColor='#22aa55';
-        btn.textContent='転移陣';
-        btn.onclick=()=>openM('m-town');
-        bar.appendChild(btn);
-      }
-    }
+    pushSys('✨ 転移陣を発見！「転移」ボタンから街へ帰還できます。');
   }
 
-  renderParty(); updateBadges(); updateHdr();
+  renderParty(); updateBadges(); updateHdr(); updateQuickBar();
 }
 
 function addDrop(id, unidentified){
@@ -909,6 +1024,7 @@ function openTownModal(){openM('m-town');}
 
 function returnToTown(){
   G.inTown=true;
+  G.phase='town';
   closeM('m-town');
   updateHdr();updateQuickBar();
   const tMsg='石畳の道、賑やかな店の声、篝火の温もり——街ドーンウォールへ帰還した。\nここでは宿屋で疲れを癒し、神殿で倒れた仲間を生き返らせ、商店で装備を整えることができる。';
@@ -922,6 +1038,7 @@ function showTownMenu(){
   const unid=G.bag.filter(b=>b.type==='equip'&&!b.identified);
   document.getElementById('tserv-title').textContent='街のサービス';
   document.getElementById('tserv-content').innerHTML=`
+    <div style="text-align:center;font-family:'IM Fell English',serif;font-size:13px;color:#c9a227;margin-bottom:10px">所持金: ${G.gold.toLocaleString()}G</div>
     <div class="service-row" onclick="townInn()">
       <div><div class="service-name">🏨 宿屋「黄金の杯」</div><div class="service-desc">HP・MPを全回復する</div></div>
       <div class="service-cost">${TOWN.inn_cost} G</div>
@@ -1029,6 +1146,7 @@ function buyCons(id,price){
 
 function leaveForDungeon(){
   G.inTown=false;
+  G.phase='explore';
   closeM('m-tserv');
   pushNarr(`街を出発し、ダンジョンB${G.floor}Fへと向かった。\n闇が再び牙を剥く——進め、勇者たちよ。`);
   updateHdr();updateQuickBar();saveState();
@@ -1099,18 +1217,6 @@ function parseResp(raw){
 }
 
 function setLoad(v){G.loading=v;document.getElementById('btn-send').disabled=v;}
-function quickAct(a){
-  if(a==='ダンジョンへ戻る'){leaveForDungeon();return;}
-  if(a==='街へ帰る'){openM('m-town');return;}
-  if(G.inTown){
-    if(a==='宿屋で休む'){townInn();return;}
-    if(a==='神殿で蘇生を頼む'){townTemple();return;}
-    if(a==='アイテムを鑑定してもらう'){townIdentify();return;}
-    if(a==='道具屋へ行く'||a==='武器屋へ行く'){townShop();document.getElementById('tserv-title').textContent='武器・防具店';openM('m-tserv');return;}
-    if(a==='ダンジョンへ戻る'){leaveForDungeon();return;}
-  }
-  const inp=document.getElementById('chat-input');inp.value=a;autoResize(inp);sendMsg();
-}
 
 // ================================================================
 // SETTINGS
@@ -1134,11 +1240,12 @@ function ovClick(e,id){if(e.target.id===id) closeM(id);}
 // ================================================================
 // STORAGE
 // ================================================================
-function saveState(){try{localStorage.setItem(SK_STORE,JSON.stringify({party:G.party,messages:G.messages.slice(-60),floor:G.floor,maxFloor:G.maxFloor,gold:G.gold,inTown:G.inTown,cfg:G.cfg,bag:G.bag,nextUid:G.nextUid}));}catch(_){}}
+function saveState(){try{localStorage.setItem(SK_STORE,JSON.stringify({party:G.party,messages:G.messages.slice(-60),floor:G.floor,maxFloor:G.maxFloor,gold:G.gold,inTown:G.inTown,phase:G.phase,battleSel:G.battleSel,cfg:G.cfg,bag:G.bag,nextUid:G.nextUid}));}catch(_){}}
 function loadState(){
   try{const raw=localStorage.getItem(SK_STORE);if(!raw) return;const d=JSON.parse(raw);
     if(d.party?.length) G.party=d.party;if(d.messages?.length) G.messages=d.messages;
     if(d.floor) G.floor=d.floor;if(d.maxFloor) G.maxFloor=d.maxFloor;
+    if(d.phase) G.phase=d.phase;if(d.battleSel) G.battleSel=d.battleSel;
     if(d.gold!==undefined) G.gold=d.gold;if(d.inTown!==undefined) G.inTown=d.inTown;
     if(d.cfg) G.cfg={...DEFAULT_CFG,...d.cfg};
     if(d.bag) G.bag=d.bag;if(d.nextUid) G.nextUid=d.nextUid;
