@@ -20,379 +20,489 @@
 body{font-family:'Crimson Pro','Times New Roman',serif;background-color:#080810;color:#e8d5b7;overflow:hidden;-webkit-text-size-adjust:100%}
 #app{height:100svh;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 /* HEADER */
-#header-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 10px 4px;background-color:#0c0c18;border-bottom:1px solid #3a2a1a;flex-shrink:0}
-.title-text{font-family:'IM Fell English',serif;font-size:15px;color:#c9a227;letter-spacing:2px;text-shadow:0 0 12px rgba(201,162,39,.5)}
-.floor-badge{font-family:'IM Fell English',serif;font-size:11px;color:#8a6a3a;letter-spacing:1px}
-.hdr-btn{width:32px;height:32px;background:none;border:1px solid #3a2a1a;border-radius:6px;color:#8a6a3a;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;position:relative}
+#header-bar{display:flex;align-items:center;justify-content:space-between;padding:5px 9px 3px;background-color:#0c0c18;border-bottom:1px solid #3a2a1a;flex-shrink:0}
+.title-text{font-family:'IM Fell English',serif;font-size:13px;color:#c9a227;letter-spacing:1px;text-shadow:0 0 10px rgba(201,162,39,.5)}
+.hdr-center{display:flex;align-items:center;gap:8px}
+.location-badge{font-family:'IM Fell English',serif;font-size:11px;padding:2px 7px;border-radius:12px;letter-spacing:1px}
+.location-badge.dungeon{background-color:#1a0c0c;color:#c72222;border:1px solid #441a1a}
+.location-badge.town{background-color:#0c1a10;color:#22aa55;border:1px solid #1a4428}
+.gold-badge{font-family:'IM Fell English',serif;font-size:11px;color:#c9a227;background-color:#14100a;border:1px solid #3a2a1a;border-radius:12px;padding:2px 7px}
+.hdr-btn{width:30px;height:30px;background:none;border:1px solid #3a2a1a;border-radius:6px;color:#8a6a3a;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;position:relative;flex-shrink:0}
 .hdr-btn:active{background-color:#1a1828}
-.badge-dot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;background-color:#e05555;border-radius:50%;border:1px solid #080810;display:none}
-/* PARTY */
+.badge-dot{position:absolute;top:-3px;right:-3px;width:8px;height:8px;background-color:#e05555;border-radius:50%;border:1px solid #080810;display:none}
+/* PARTY PANEL */
 #party-panel{background-color:#0c0c18;border-bottom:2px solid #3a2a1a;padding:5px 7px;flex-shrink:0}
-.party-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
-.member-card{background-color:#14121e;border:1px solid #2e2040;border-radius:7px;padding:5px 4px 3px;position:relative;transition:border-color .3s;cursor:pointer}
+.party-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.member-card{background-color:#14121e;border:1px solid #2e2040;border-radius:7px;padding:4px 4px 3px;cursor:pointer;transition:border-color .25s}
 .member-card:active{background-color:#1a1828}
 .member-card.low-hp{border-color:#661122}
-.member-card.dead{opacity:.45;filter:grayscale(80%)}
-.member-card.levelup-ready{border-color:#c9a227;box-shadow:0 0 6px rgba(201,162,39,.4)}
+.member-card.dead{opacity:.4;filter:grayscale(80%)}
+.member-card.lu-ready{border-color:#c9a227;box-shadow:0 0 5px rgba(201,162,39,.35)}
 .member-top{display:flex;align-items:center;gap:2px;margin-bottom:3px}
 .member-icon{font-size:11px;flex-shrink:0}
 .member-name{font-family:'IM Fell English',serif;font-size:9px;color:#d4a84b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
-.member-lv{font-family:'IM Fell English',serif;font-size:8px;color:#c9a227;white-space:nowrap;flex-shrink:0}
-.bar-wrap{margin-bottom:2px}
-.bar-row{display:flex;justify-content:space-between;font-size:7px;color:#7a6a5a;margin-bottom:1px}
+.member-lv{font-size:8px;color:#c9a227;flex-shrink:0}
+.bar-wrap{margin-bottom:1px}
+.bar-row{display:flex;justify-content:space-between;font-size:6px;color:#7a6a5a;margin-bottom:1px}
 .bar-track{height:4px;background-color:#1e1c2c;border-radius:2px;overflow:hidden}
-.hp-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#7a0e0e,#c72222);transition:width .6s cubic-bezier(.4,0,.2,1)}
-.mp-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#0a0a7a,#1a5acc);transition:width .6s cubic-bezier(.4,0,.2,1)}
-.exp-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#3a6a10,#7acc22);transition:width .6s cubic-bezier(.4,0,.2,1)}
+.hp-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#7a0e0e,#c72222);transition:width .5s ease}
+.mp-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#0a0a7a,#1a5acc);transition:width .5s ease}
+.exp-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#3a6a10,#7acc22);transition:width .5s ease}
 .hp-fill.danger{background:linear-gradient(90deg,#550505,#aa1111)}
-.status-chip{display:block;font-size:7px;text-align:center;padding:1px 2px;border-radius:3px;margin-top:2px;background-color:#1c2a18;color:#6aaa68;border:1px solid #2a4028}
-.status-chip.poisoned{background-color:#221430;color:#cc55cc;border-color:#441a55}
-.status-chip.burned{background-color:#2a1808;color:#dd7733;border-color:#553311}
-.status-chip.frozen{background-color:#0a1830;color:#55aadd;border-color:#1a3d66}
-.status-chip.stunned{background-color:#282216;color:#ddcc33;border-color:#5a4a10}
-.status-chip.dead{background-color:#1e0c0c;color:#aa3333;border-color:#440e0e}
+.sc{display:block;font-size:7px;text-align:center;padding:1px 2px;border-radius:3px;margin-top:2px;background-color:#1c2a18;color:#6aaa68;border:1px solid #2a4028}
+.sc.poisoned{background-color:#221430;color:#cc55cc;border-color:#441a55}
+.sc.burned{background-color:#2a1808;color:#dd7733;border-color:#553311}
+.sc.frozen{background-color:#0a1830;color:#55aadd;border-color:#1a3d66}
+.sc.stunned{background-color:#282216;color:#ddcc33;border-color:#5a4a10}
+.sc.dead{background-color:#1e0c0c;color:#aa3333;border-color:#440e0e}
 /* CHAT */
-#chat-area{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch;background-image:radial-gradient(ellipse 60% 40% at 15% 60%,rgba(40,20,10,.3) 0%,transparent 70%),radial-gradient(ellipse 50% 30% at 85% 30%,rgba(15,10,40,.4) 0%,transparent 70%)}
+#chat-area{flex:1;overflow-y:auto;padding:10px 9px;display:flex;flex-direction:column;gap:9px;-webkit-overflow-scrolling:touch;background-image:radial-gradient(ellipse 60% 40% at 15% 60%,rgba(40,20,10,.3) 0%,transparent 70%),radial-gradient(ellipse 50% 30% at 85% 30%,rgba(15,10,40,.4) 0%,transparent 70%)}
 #chat-area::-webkit-scrollbar{width:3px}
 #chat-area::-webkit-scrollbar-thumb{background:#3a2a1a;border-radius:2px}
-.msg{display:flex;flex-direction:column;max-width:92%;animation:msgIn .25s ease-out}
-@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg{display:flex;flex-direction:column;max-width:93%;animation:msgIn .22s ease-out}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .msg.narrator{align-self:flex-start}
 .msg.player{align-self:flex-end}
 .msg.system{align-self:center;max-width:100%}
-.msg-sender{font-family:'IM Fell English',serif;font-size:10px;color:#8a6a3a;margin-bottom:3px;padding-left:5px;letter-spacing:1px}
-.msg.player .msg-sender{text-align:right;padding-right:5px;color:#4a6a9a}
-.msg-bubble{padding:9px 13px;border-radius:10px;font-size:15px;line-height:1.65}
+.msg.town-narr{align-self:flex-start}
+.msg-sender{font-family:'IM Fell English',serif;font-size:10px;color:#8a6a3a;margin-bottom:2px;padding-left:4px;letter-spacing:1px}
+.msg.player .msg-sender{text-align:right;padding-right:4px;color:#4a6a9a}
+.msg.town-narr .msg-sender{color:#22aa55}
+.msg-bubble{padding:8px 12px;border-radius:10px;font-size:14px;line-height:1.65}
 .msg.narrator .msg-bubble{background-color:#131222;border:1px solid #2e2040;border-left:3px solid #c9a227;color:#ead6b8;font-style:italic}
 .msg.player .msg-bubble{background-color:#121c30;border:1px solid #243054;border-right:3px solid #3a6acc;color:#bcd0ee;text-align:right}
-.msg.system .msg-bubble{background:none;color:#7a6a5a;font-size:12px;font-style:italic;text-align:center;padding:3px 8px}
+.msg.system .msg-bubble{background:none;color:#7a6a5a;font-size:12px;font-style:italic;text-align:center;padding:2px 6px}
+.msg.town-narr .msg-bubble{background-color:#0e1a12;border:1px solid #1e3828;border-left:3px solid #22aa55;color:#c8e8d0}
 .typing-wrap{display:flex;flex-direction:column;align-self:flex-start}
-.typing-bubble{background-color:#131222;border:1px solid #2e2040;border-left:3px solid #c9a227;border-radius:10px;padding:10px 14px;display:flex;gap:5px;align-items:center}
+.typing-bubble{background-color:#131222;border:1px solid #2e2040;border-left:3px solid #c9a227;border-radius:10px;padding:9px 13px;display:flex;gap:5px;align-items:center}
 .tdot{width:6px;height:6px;background-color:#c9a227;border-radius:50%;animation:tdot 1.3s infinite}
 .tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
 @keyframes tdot{0%,65%,100%{transform:translateY(0);opacity:.4}35%{transform:translateY(-5px);opacity:1}}
 /* QUICK BAR */
-#quick-bar{display:flex;gap:5px;padding:5px 10px 0;overflow-x:auto;flex-shrink:0;background-color:#0c0c18;-webkit-overflow-scrolling:touch}
+#quick-bar{display:flex;gap:4px;padding:4px 9px 0;overflow-x:auto;flex-shrink:0;background-color:#0c0c18;-webkit-overflow-scrolling:touch}
 #quick-bar::-webkit-scrollbar{display:none}
 .qbtn{font-family:'IM Fell English',serif;font-size:11px;white-space:nowrap;padding:4px 9px;background-color:#14121e;border:1px solid #2e2040;border-radius:20px;color:#c9a227;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0}
 .qbtn:active{background-color:#1e1c30;border-color:#c9a227}
+.qbtn.town-btn{color:#22aa55;border-color:#1a3828;background-color:#0e1810}
+.qbtn.town-btn:active{background-color:#142018}
 /* INPUT */
-#input-panel{background-color:#0c0c18;border-top:2px solid #3a2a1a;padding:8px 10px 10px;flex-shrink:0}
+#input-panel{background-color:#0c0c18;border-top:2px solid #3a2a1a;padding:7px 9px 9px;flex-shrink:0}
 .input-row{display:flex;gap:7px;align-items:flex-end}
-#chat-input{flex:1;background-color:#14121e;border:1px solid #2e2040;border-radius:10px;color:#e8d5b7;font-family:'Crimson Pro',serif;font-size:16px;padding:9px 12px;resize:none;min-height:44px;max-height:110px;outline:none;-webkit-appearance:none;line-height:1.5}
+#chat-input{flex:1;background-color:#14121e;border:1px solid #2e2040;border-radius:10px;color:#e8d5b7;font-family:'Crimson Pro',serif;font-size:16px;padding:8px 11px;resize:none;min-height:42px;max-height:100px;outline:none;-webkit-appearance:none;line-height:1.5}
 #chat-input::placeholder{color:#4a3a2a}
 #chat-input:focus{border-color:#c9a227}
-#btn-send{width:44px;height:44px;background:linear-gradient(140deg,#8b6a10,#c9a227);border:none;border-radius:10px;color:#080810;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:opacity .2s}
+#btn-send{width:42px;height:42px;background:linear-gradient(140deg,#8b6a10,#c9a227);border:none;border-radius:10px;color:#080810;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:opacity .2s}
 #btn-send:disabled{opacity:.3;cursor:not-allowed}
 #btn-send:active:not(:disabled){opacity:.75}
 /* MODALS */
-.modal-overlay{position:fixed;inset:0;background-color:rgba(4,4,12,.92);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0 0 env(safe-area-inset-bottom,0px)}
-.modal-overlay.hidden{display:none}
-.modal-sheet{background-color:#0e0e1c;border:1px solid #3a2a1a;border-top:2px solid #c9a227;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;padding:18px 16px 22px;-webkit-overflow-scrolling:touch}
-.modal-handle{width:40px;height:4px;background-color:#3a2a1a;border-radius:2px;margin:0 auto 14px}
-.modal-title{font-family:'IM Fell English',serif;font-size:19px;color:#c9a227;text-align:center;letter-spacing:2px;margin-bottom:16px;text-shadow:0 0 10px rgba(201,162,39,.4)}
-.form-label{font-family:'IM Fell English',serif;font-size:13px;color:#c9a227;display:block;margin-bottom:5px;letter-spacing:1px}
-.form-hint{font-size:11px;color:#5a4a3a;margin-top:3px}
-.form-section{margin-bottom:14px}
-.f-input{width:100%;background-color:#14121e;border:1px solid #2e2040;border-radius:8px;color:#e8d5b7;font-family:'Crimson Pro',serif;font-size:16px;padding:9px 11px;outline:none;-webkit-appearance:none}
-.f-input:focus{border-color:#c9a227}
-select.f-input{cursor:pointer}
-textarea.f-input{resize:vertical;line-height:1.5}
-.modal-actions{display:flex;gap:9px;margin-top:20px}
-.btn-ok{flex:1;background:linear-gradient(140deg,#8b6a10,#c9a227);color:#080810;border:none;border-radius:10px;padding:12px;font-family:'IM Fell English',serif;font-size:15px;cursor:pointer;font-weight:bold;letter-spacing:1px}
-.btn-cancel{flex:1;background:none;color:#7a6a5a;border:1px solid #3a2a1a;border-radius:10px;padding:12px;font-family:'IM Fell English',serif;font-size:15px;cursor:pointer}
-.danger-link{display:block;text-align:center;font-size:12px;color:#883333;background:none;border:none;cursor:pointer;margin-top:14px;font-family:'Crimson Pro',serif;text-decoration:underline}
-.divider{height:1px;background-color:#2e2040;margin:14px 0}
-.tab-bar{display:flex;gap:4px;margin-bottom:12px}
-.tab-btn{flex:1;padding:7px;background-color:#14121e;border:1px solid #2e2040;border-radius:7px;color:#7a6a5a;font-family:'IM Fell English',serif;font-size:12px;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
+.moverlay{position:fixed;inset:0;background-color:rgba(4,4,12,.92);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0 0 env(safe-area-inset-bottom,0px)}
+.moverlay.hidden{display:none}
+.msheet{background-color:#0e0e1c;border:1px solid #3a2a1a;border-top:2px solid #c9a227;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;padding:16px 15px 20px;-webkit-overflow-scrolling:touch}
+.msheet.town-sheet{border-top-color:#22aa55}
+.mhandle{width:40px;height:4px;background-color:#3a2a1a;border-radius:2px;margin:0 auto 12px}
+.mtitle{font-family:'IM Fell English',serif;font-size:18px;color:#c9a227;text-align:center;letter-spacing:2px;margin-bottom:14px;text-shadow:0 0 10px rgba(201,162,39,.4)}
+.mtitle.town{color:#22aa55;text-shadow:0 0 10px rgba(34,170,85,.4)}
+.flabel{font-family:'IM Fell English',serif;font-size:12px;color:#c9a227;display:block;margin-bottom:4px;letter-spacing:1px}
+.fhint{font-size:11px;color:#5a4a3a;margin-top:3px}
+.fsec{margin-bottom:13px}
+.finput{width:100%;background-color:#14121e;border:1px solid #2e2040;border-radius:8px;color:#e8d5b7;font-family:'Crimson Pro',serif;font-size:15px;padding:8px 10px;outline:none;-webkit-appearance:none}
+.finput:focus{border-color:#c9a227}
+select.finput{cursor:pointer}
+textarea.finput{resize:vertical;line-height:1.5}
+.mactions{display:flex;gap:8px;margin-top:18px}
+.bok{flex:1;background:linear-gradient(140deg,#8b6a10,#c9a227);color:#080810;border:none;border-radius:10px;padding:11px;font-family:'IM Fell English',serif;font-size:14px;cursor:pointer;font-weight:bold;letter-spacing:1px}
+.bok.green{background:linear-gradient(140deg,#1a6a30,#22aa55);color:#fff}
+.bcancel{flex:1;background:none;color:#7a6a5a;border:1px solid #3a2a1a;border-radius:10px;padding:11px;font-family:'IM Fell English',serif;font-size:14px;cursor:pointer}
+.danger-link{display:block;text-align:center;font-size:12px;color:#883333;background:none;border:none;cursor:pointer;margin-top:12px;text-decoration:underline}
+.divider{height:1px;background-color:#2e2040;margin:12px 0}
+.tab-bar{display:flex;gap:4px;margin-bottom:11px}
+.tab-btn{flex:1;padding:6px;background-color:#14121e;border:1px solid #2e2040;border-radius:7px;color:#7a6a5a;font-family:'IM Fell English',serif;font-size:11px;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
 .tab-btn.active{background-color:#1e1c30;border-color:#c9a227;color:#c9a227}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+.tab-btn.tactive{background-color:#0e1810;border-color:#22aa55;color:#22aa55}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:5px}
 .stat-row{display:flex;justify-content:space-between;font-size:11px;padding:2px 6px;background-color:#1a1828;border-radius:4px}
-.stat-key{color:#8a7a6a}
-.stat-val{color:#e8d5b7;font-weight:600}
-/* LEVEL UP */
-.lu-points-left{text-align:center;font-size:13px;color:#8aaa6a;margin-bottom:14px}
-.lu-stat-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background-color:#14121e;border:1px solid #2e2040;border-radius:8px;margin-bottom:6px}
-.lu-stat-name{font-family:'IM Fell English',serif;font-size:13px;color:#d4a84b;width:40px}
-.lu-stat-desc{font-size:10px;color:#5a4a3a;flex:1;padding:0 8px}
-.lu-stat-val{font-size:14px;color:#e8d5b7;width:28px;text-align:center}
-.lu-btn{width:28px;height:28px;background:none;border:1px solid #3a2a1a;border-radius:6px;color:#c9a227;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.skey{color:#8a7a6a}.sval{color:#e8d5b7;font-weight:600}
+/* LU */
+.lu-rem{text-align:center;font-size:13px;color:#8aaa6a;margin-bottom:12px}
+.lu-row{display:flex;align-items:center;padding:7px 9px;background-color:#14121e;border:1px solid #2e2040;border-radius:8px;margin-bottom:5px}
+.lu-name{font-family:'IM Fell English',serif;font-size:13px;color:#d4a84b;width:38px}
+.lu-desc{font-size:10px;color:#5a4a3a;flex:1;padding:0 7px}
+.lu-val{font-size:14px;color:#e8d5b7;width:26px;text-align:center}
+.lu-btn{width:26px;height:26px;background:none;border:1px solid #3a2a1a;border-radius:5px;color:#c9a227;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
 .lu-btn:disabled{opacity:.3;cursor:default}
 .lu-btn:active:not(:disabled){background-color:#1e1c30}
-.auto-btn{width:100%;background-color:#1a1828;border:1px solid #2e2040;border-radius:8px;color:#8aaa6a;font-family:'IM Fell English',serif;font-size:13px;padding:9px;cursor:pointer;margin-bottom:10px}
-.auto-btn:active{background-color:#222030}
-/* EQUIPMENT */
-.equip-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
-.equip-slot{background-color:#14121e;border:1px solid #2e2040;border-radius:8px;padding:8px 9px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.equip-slot:active{background-color:#1e1c30}
-.equip-slot-label{font-size:10px;color:#7a6a5a;margin-bottom:2px}
-.equip-slot-item{font-size:13px;color:#d4a84b}
-.equip-slot.empty .equip-slot-item{color:#3a3048;font-style:italic}
-.equip-slot-stats{font-size:10px;color:#5a4a3a;margin-top:2px}
-.item-list{max-height:220px;overflow-y:auto}
-.item-row{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background-color:#14121e;border:1px solid #2e2040;border-radius:7px;margin-bottom:5px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.item-row:active{background-color:#1e1c30}
-.item-row.equipped{border-color:#c9a227}
-.item-name{font-size:13px;color:#d4a84b}
-.item-stats{font-size:10px;color:#5a4a3a}
-.item-action{font-size:11px;color:#c9a227;font-family:'IM Fell English',serif;flex-shrink:0}
-.party-cfg-row{display:flex;gap:6px;margin-bottom:8px;align-items:center}
+.auto-btn{width:100%;background-color:#1a1828;border:1px solid #2e2040;border-radius:8px;color:#8aaa6a;font-family:'IM Fell English',serif;font-size:12px;padding:8px;cursor:pointer;margin-bottom:9px}
+/* EQUIP */
+.equip-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.eslot{background-color:#14121e;border:1px solid #2e2040;border-radius:8px;padding:7px 8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.eslot:active{background-color:#1e1c30}
+.eslot-label{font-size:10px;color:#7a6a5a;margin-bottom:2px}
+.eslot-item{font-size:12px;color:#d4a84b}
+.eslot.empty .eslot-item{color:#3a3048;font-style:italic}
+.eslot.unid .eslot-item{color:#9966cc}
+.eslot-stats{font-size:9px;color:#5a4a3a;margin-top:1px}
+/* ITEM LIST */
+.ilist{max-height:200px;overflow-y:auto}
+.irow{display:flex;align-items:center;justify-content:space-between;padding:8px 9px;background-color:#14121e;border:1px solid #2e2040;border-radius:7px;margin-bottom:4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.irow:active{background-color:#1e1c30}
+.irow.equipped{border-color:#c9a227}
+.irow.unidentified{border-color:#663399}
+.iname{font-size:13px;color:#d4a84b}
+.iname.unid-color{color:#9966cc}
+.istats{font-size:10px;color:#5a4a3a}
+.iact{font-size:11px;color:#c9a227;font-family:'IM Fell English',serif;flex-shrink:0}
+/* INVENTORY */
+.inv-row{display:flex;align-items:center;justify-content:space-between;padding:8px 9px;background-color:#14121e;border:1px solid #2e2040;border-radius:7px;margin-bottom:4px}
+.inv-name{font-size:13px;color:#d4a84b;flex:1}
+.inv-qty{font-size:11px;color:#8a7a6a;margin:0 8px}
+.inv-btns{display:flex;gap:5px}
+.inv-btn{background:none;border:1px solid #3a2a1a;border-radius:5px;color:#c9a227;font-size:11px;padding:3px 8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.inv-btn:active{background-color:#1e1c30}
+.inv-btn.red{color:#aa3333;border-color:#441a1a}
+/* TOWN SERVICE */
+.service-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background-color:#0e1810;border:1px solid #1a3828;border-radius:8px;margin-bottom:6px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.service-row:active{background-color:#142018}
+.service-name{font-family:'IM Fell English',serif;font-size:14px;color:#c8e8d0}
+.service-cost{font-size:12px;color:#c9a227}
+.service-desc{font-size:11px;color:#4a6a5a;margin-top:2px}
+/* RARITY COLORS */
+.rarity-common{color:#d4a84b}.rarity-uncommon{color:#44aadd}.rarity-rare{color:#9966dd}.rarity-legendary{color:#dd8822}
+/* PARTY CFG */
+.pcrow{display:flex;gap:5px;margin-bottom:7px;align-items:center}
 </style>
 </head>
 <body>
 <div id="app">
+  <!-- HEADER -->
   <div id="header-bar">
     <div class="title-text">DUNGEON CHRONICLES</div>
-    <div style="display:flex;align-items:center;gap:5px">
-      <span class="floor-badge" id="floor-badge">B1F</span>
-      <button class="hdr-btn" onclick="openEquipModal()" title="装備">🗡</button>
-      <button class="hdr-btn" onclick="openLevelUpModal()" title="レベルアップ">LV<span class="badge-dot" id="dot-levelup"></span></button>
-      <button class="hdr-btn" onclick="openSettings()" title="設定">⚙</button>
+    <div class="hdr-center">
+      <span class="location-badge dungeon" id="loc-badge">B1F</span>
+      <span class="gold-badge" id="gold-badge">G: 0</span>
+    </div>
+    <div style="display:flex;gap:4px">
+      <button class="hdr-btn" onclick="openBagModal()" title="所持品">&#x1F392;<span class="badge-dot" id="dot-bag"></span></button>
+      <button class="hdr-btn" onclick="openEquipModal()" title="装備">&#x2694;</button>
+      <button class="hdr-btn" onclick="openLvModal()" title="LV">LV<span class="badge-dot" id="dot-lv"></span></button>
+      <button class="hdr-btn" onclick="openSettings()" title="設定">&#x2699;</button>
     </div>
   </div>
 
+  <!-- PARTY -->
+
   <div id="party-panel"><div class="party-grid" id="party-grid"></div></div>
+
+  <!-- CHAT -->
+
   <div id="chat-area"></div>
 
-  <div id="quick-bar">
-    <button class="qbtn" onclick="quickAction('周囲を探索する')">探索</button>
-    <button class="qbtn" onclick="quickAction('前進する')">前進</button>
-    <button class="qbtn" onclick="quickAction('敵に攻撃する')">攻撃</button>
-    <button class="qbtn" onclick="quickAction('魔法を詠唱する')">魔法</button>
-    <button class="qbtn" onclick="quickAction('回復する')">回復</button>
-    <button class="qbtn" onclick="quickAction('宝箱を調べる')">宝箱</button>
-    <button class="qbtn" onclick="quickAction('逃げる！')">逃走</button>
-    <button class="qbtn" onclick="quickAction('休憩する')">休憩</button>
-  </div>
+  <!-- QUICK BAR -->
+
+  <div id="quick-bar"></div>
+
+  <!-- INPUT -->
 
   <div id="input-panel">
     <div class="input-row">
-      <textarea id="chat-input" rows="1" placeholder="行動を入力... (例: 宝箱を慎重に開ける)"
-        onkeydown="handleKeyDown(event)" oninput="autoResize(this)"></textarea>
-      <button id="btn-send" onclick="sendMessage()">&#x27A4;</button>
+      <textarea id="chat-input" rows="1" placeholder="行動を入力..."
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button id="btn-send" onclick="sendMsg()">&#x27A4;</button>
     </div>
   </div>
 </div>
 
 <!-- SETTINGS MODAL -->
 
-<div id="modal-settings" class="modal-overlay hidden" onclick="overlayClick(event,'modal-settings')">
-<div class="modal-sheet">
-  <div class="modal-handle"></div>
+<div id="m-settings" class="moverlay hidden" onclick="ovClick(event,'m-settings')">
+<div class="msheet"><div class="mhandle"></div>
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('api',this,'settings')">API</button>
-    <button class="tab-btn" onclick="switchTab('party',this,'settings')">パーティ</button>
-    <button class="tab-btn" onclick="switchTab('sys',this,'settings')">プロンプト</button>
+    <button class="tab-btn active" onclick="stab('api',this)">API</button>
+    <button class="tab-btn" onclick="stab('pty',this)">パーティ</button>
+    <button class="tab-btn" onclick="stab('sys',this)">プロンプト</button>
   </div>
-  <div id="stab-api">
-    <div class="form-section">
-      <label class="form-label">APIプロバイダー</label>
-      <select class="f-input" id="sel-provider" onchange="onProviderChange()">
+  <div id="st-api">
+    <div class="fsec"><label class="flabel">プロバイダー</label>
+      <select class="finput" id="sel-prov" onchange="provChange()">
         <option value="custom">カスタム (Gemini等)</option>
         <option value="openrouter">OpenRouter</option>
         <option value="openai">OpenAI</option>
-      </select>
-    </div>
-    <div class="form-section" id="grp-custom">
-      <label class="form-label">カスタムURL</label>
-      <input type="url" class="f-input" id="inp-custom-url" placeholder="https://generativelanguage.googleapis.com/v1beta/openai">
-    </div>
-    <div class="form-section">
-      <label class="form-label">APIキー</label>
-      <input type="password" class="f-input" id="inp-apikey" placeholder="AIza... / sk-...">
-      <div class="form-hint">このデバイスのlocalStorageのみに保存</div>
-    </div>
-    <div class="form-section">
-      <label class="form-label">モデル</label>
-      <input type="text" class="f-input" id="inp-model" placeholder="gemini-2.0-flash">
-      <div class="form-hint" id="model-hint">Google AI Studio: gemini-2.0-flash / OpenRouter: openrouter/free</div>
-    </div>
+      </select></div>
+    <div class="fsec" id="grp-custom"><label class="flabel">カスタムURL</label>
+      <input type="url" class="finput" id="inp-url" placeholder="https://generativelanguage.googleapis.com/v1beta/openai"></div>
+    <div class="fsec"><label class="flabel">APIキー</label>
+      <input type="password" class="finput" id="inp-key" placeholder="AIza... / sk-...">
+      <div class="fhint">このデバイスのlocalStorageにのみ保存</div></div>
+    <div class="fsec"><label class="flabel">モデル</label>
+      <input type="text" class="finput" id="inp-model" placeholder="gemini-2.0-flash">
+      <div class="fhint">Google AI Studio: gemini-2.0-flash / OpenRouter: openrouter/free</div></div>
   </div>
-  <div id="stab-party" style="display:none"><div id="party-config-list"></div></div>
-  <div id="stab-sys" style="display:none">
-    <textarea class="f-input" id="inp-sysprompt" rows="9"></textarea>
+  <div id="st-pty" style="display:none"><div id="party-cfg"></div></div>
+  <div id="st-sys" style="display:none"><textarea class="finput" id="inp-sys" rows="9"></textarea></div>
+  <div class="mactions">
+    <button class="bcancel" onclick="closeM('m-settings')">閉じる</button>
+    <button class="bok" onclick="saveSetting()">保存</button>
   </div>
-  <div class="modal-actions">
-    <button class="btn-cancel" onclick="closeModal('modal-settings')">閉じる</button>
-    <button class="btn-ok" onclick="saveSettings()">保存</button>
-  </div>
-  <button class="danger-link" onclick="confirmReset()">ゲームをリセット</button>
-</div>
-</div>
+  <button class="danger-link" onclick="doReset()">ゲームをリセット</button>
+</div></div>
 
 <!-- LEVEL UP MODAL -->
 
-<div id="modal-lu" class="modal-overlay hidden">
-<div class="modal-sheet">
-  <div class="modal-handle"></div>
-  <div class="modal-title">レベルアップ！</div>
+<div id="m-lu" class="moverlay hidden">
+<div class="msheet"><div class="mhandle"></div>
+  <div class="mtitle">Level Up!</div>
   <div class="tab-bar" id="lu-tabs"></div>
   <div id="lu-content"></div>
-  <div class="modal-actions">
-    <button class="btn-ok" onclick="confirmLevelUp()">確定</button>
-  </div>
-</div>
-</div>
+  <div class="mactions"><button class="bok" onclick="confirmLu()">確定</button></div>
+</div></div>
 
 <!-- EQUIP MODAL -->
 
-<div id="modal-equip" class="modal-overlay hidden" onclick="overlayClick(event,'modal-equip')">
-<div class="modal-sheet">
-  <div class="modal-handle"></div>
-  <div class="modal-title">装備管理</div>
+<div id="m-equip" class="moverlay hidden" onclick="ovClick(event,'m-equip')">
+<div class="msheet"><div class="mhandle"></div>
+  <div class="mtitle">装備管理</div>
   <div class="tab-bar" id="eq-tabs"></div>
   <div id="eq-content"></div>
-  <div class="modal-actions">
-    <button class="btn-ok" onclick="closeModal('modal-equip')">閉じる</button>
-  </div>
-</div>
-</div>
+  <div class="mactions"><button class="bok" onclick="closeM('m-equip')">閉じる</button></div>
+</div></div>
 
 <!-- ITEM SELECT MODAL -->
 
-<div id="modal-item" class="modal-overlay hidden" onclick="overlayClick(event,'modal-item')">
-<div class="modal-sheet">
-  <div class="modal-handle"></div>
-  <div class="modal-title" id="item-modal-title">アイテム選択</div>
-  <div class="item-list" id="item-modal-list"></div>
-  <div class="modal-actions" style="margin-top:12px">
-    <button class="btn-cancel" style="color:#883333;border-color:#441a1a" onclick="unequipSlot()">外す</button>
-    <button class="btn-cancel" onclick="closeModal('modal-item')">キャンセル</button>
+<div id="m-isel" class="moverlay hidden" onclick="ovClick(event,'m-isel')">
+<div class="msheet"><div class="mhandle"></div>
+  <div class="mtitle" id="isel-title">アイテム選択</div>
+  <div class="ilist" id="isel-list"></div>
+  <div class="mactions" style="margin-top:10px">
+    <button class="bcancel" style="color:#883333;border-color:#441a1a" onclick="unequipSlot()">外す</button>
+    <button class="bcancel" onclick="closeM('m-isel')">閉じる</button>
   </div>
-</div>
-</div>
+</div></div>
+
+<!-- BAG / INVENTORY MODAL -->
+
+<div id="m-bag" class="moverlay hidden" onclick="ovClick(event,'m-bag')">
+<div class="msheet"><div class="mhandle"></div>
+  <div class="mtitle">所持品 &amp; ゴールド</div>
+  <div style="text-align:center;font-family:'IM Fell English',serif;font-size:22px;color:#c9a227;margin-bottom:12px" id="gold-display"></div>
+  <div class="divider"></div>
+  <div class="flabel">アイテム</div>
+  <div id="bag-list" style="max-height:240px;overflow-y:auto;margin-top:6px"></div>
+  <div class="mactions"><button class="bok" onclick="closeM('m-bag')">閉じる</button></div>
+</div></div>
+
+<!-- TOWN MODAL -->
+
+<div id="m-town" class="moverlay hidden" onclick="ovClick(event,'m-town')">
+<div class="msheet town-sheet"><div class="mhandle"></div>
+  <div class="mtitle town">街へ帰還</div>
+  <div style="text-align:center;font-size:13px;color:#4a6a5a;margin-bottom:14px">転移陣を使用してドーンウォールの街へ戻ります。</div>
+  <div class="mactions">
+    <button class="bcancel" onclick="closeM('m-town')">キャンセル</button>
+    <button class="bok green" onclick="returnToTown()">街へ戻る</button>
+  </div>
+</div></div>
+
+<!-- TOWN SERVICES MODAL -->
+
+<div id="m-tserv" class="moverlay hidden" onclick="ovClick(event,'m-tserv')">
+<div class="msheet town-sheet"><div class="mhandle"></div>
+  <div class="mtitle town" id="tserv-title">街のサービス</div>
+  <div id="tserv-content"></div>
+  <div class="mactions"><button class="bok green" onclick="closeM('m-tserv')">閉じる</button></div>
+</div></div>
 
 <script>
 // ================================================================
-// JOB & ITEM DATA
+// CONSTANTS
 // ================================================================
 const JOBS = {
-  warrior: { name:'戦士',   icon:'⚔️',  auto:{str:2,vit:2,spd:0,mag:0,lck:0}, pts:3 },
-  mage:    { name:'魔法使い',icon:'🧙',  auto:{str:0,vit:0,spd:1,mag:3,lck:0}, pts:3 },
-  priest:  { name:'僧侶',   icon:'✨',  auto:{str:0,vit:1,spd:0,mag:2,lck:1}, pts:3 },
-  thief:   { name:'盗賊',   icon:'🗡️', auto:{str:1,vit:0,spd:2,mag:0,lck:1}, pts:3 }
+  warrior:{name:'戦士',  icon:'⚔️', auto:{str:2,vit:2,spd:0,mag:0,lck:0},pts:3},
+  mage:   {name:'魔法使い',icon:'🧙',auto:{str:0,vit:0,spd:1,mag:3,lck:0},pts:3},
+  priest: {name:'僧侶',  icon:'✨', auto:{str:0,vit:1,spd:0,mag:2,lck:1},pts:3},
+  thief:  {name:'盗賊',  icon:'🗡️',auto:{str:1,vit:0,spd:2,mag:0,lck:1},pts:3}
 };
-const JOB_KEYS = ['warrior','mage','priest','thief'];
+const JK = ['warrior','mage','priest','thief'];
+const SLOTS = {rhand:'右手',lhand:'左手',head:'頭',armor:'鎧',feet:'足',acc:'アクセ'};
+const SK = ['rhand','lhand','head','armor','feet','acc'];
 
-const SLOT_LABELS = { rhand:'右手', lhand:'左手', head:'頭', armor:'鎧', feet:'足', acc:'アクセ' };
-const SLOT_KEYS   = ['rhand','lhand','head','armor','feet','acc'];
+// Rarity
+const RARITY = {common:{l:'並',c:'rarity-common',id_cost:50},uncommon:{l:'上質',c:'rarity-uncommon',id_cost:150},rare:{l:'レア',c:'rarity-rare',id_cost:400},legendary:{l:'伝説',c:'rarity-legendary',id_cost:1200}};
 
-const STARTER = {
-  warrior: { rhand:'iron_sword',   lhand:'wooden_shield', head:'iron_helm',    armor:'chain_mail',    feet:'iron_boots',    acc:null },
-  mage:    { rhand:'oak_staff',    lhand:null,            head:null,           armor:'robe',          feet:'leather_boots', acc:'mana_ring' },
-  priest:  { rhand:'holy_rod',     lhand:'small_shield',  head:null,           armor:'robe',          feet:'leather_boots', acc:'prayer_bead' },
-  thief:   { rhand:'dagger',       lhand:'dagger',        head:'leather_cap',  armor:'leather_armor', feet:'soft_boots',    acc:null }
-};
-
+// ITEM DATABASE
 const IDATA = {
-  iron_sword:    {name:'鉄の剣',       slot:'rhand',icon:'⚔️', str:4,  atk:8,  hit:5},
-  oak_staff:     {name:'樫の杖',       slot:'rhand',icon:'🪄', mag:3,  matk:6},
-  holy_rod:      {name:'聖なる杖',     slot:'rhand',icon:'✨', mag:2,  matk:4, lck:2},
-  dagger:        {name:'短剣',         slot:'rhand',icon:'🗡️',str:2,  atk:5,  spd:3, hit:8},
-  wooden_shield: {name:'木の盾',       slot:'lhand',icon:'🛡️',def:4},
-  small_shield:  {name:'小盾',         slot:'lhand',icon:'🛡️',def:3,  mdef:2},
-  iron_helm:     {name:'鉄の兜',       slot:'head', icon:'⛑️',vit:1,  def:5},
-  leather_cap:   {name:'革の帽子',     slot:'head', icon:'🎩', spd:1, def:2,  eva:3},
-  chain_mail:    {name:'チェインメイル',slot:'armor',icon:'🥋',vit:2,  def:10},
-  robe:          {name:'ローブ',       slot:'armor',icon:'👘', mag:1, mdef:6},
-  leather_armor: {name:'革の鎧',       slot:'armor',icon:'🥋',def:6,  spd:1},
-  iron_boots:    {name:'鉄の靴',       slot:'feet', icon:'👢', def:4, vit:1},
-  leather_boots: {name:'革の靴',       slot:'feet', icon:'👟', spd:2, eva:4},
-  soft_boots:    {name:'軟靴',         slot:'feet', icon:'👟', spd:3, eva:6},
-  mana_ring:     {name:'マナリング',   slot:'acc',  icon:'💍', mag:2, mp:20},
-  prayer_bead:   {name:'祈りの数珠',   slot:'acc',  icon:'📿', lck:3, mdef:4},
-  steel_sword:   {name:'鋼の剣',       slot:'rhand',icon:'⚔️', str:6, atk:14, hit:8},
-  fire_staff:    {name:'炎の杖',       slot:'rhand',icon:'🪄', mag:6, matk:14},
-  elven_bow:     {name:'エルフの弓',   slot:'rhand',icon:'🏹', str:3, spd:4,  atk:10, hit:15},
-  plate_armor:   {name:'プレートアーマー',slot:'armor',icon:'🥋',vit:4,def:18},
-  dragon_shield: {name:'竜鱗の盾',     slot:'lhand',icon:'🛡️',def:12, mdef:8},
-  speed_ring:    {name:'疾風の指輪',   slot:'acc',  icon:'💍', spd:5, eva:8},
-  power_ring:    {name:'力の指輪',     slot:'acc',  icon:'💍', str:5, atk:6},
-  circlet:       {name:'魔法の冠',     slot:'head', icon:'👑', mag:4, mdef:5}
+  // Starter
+  iron_sword:    {n:'鉄の剣',      slot:'rhand',icon:'⚔️',r:'common',   str:4, atk:8, hit:5},
+  oak_staff:     {n:'樫の杖',      slot:'rhand',icon:'🪄',r:'common',   mag:3, matk:6},
+  holy_rod:      {n:'聖なる杖',    slot:'rhand',icon:'✨',r:'common',   mag:2, matk:4,lck:2},
+  dagger:        {n:'短剣',        slot:'rhand',icon:'🗡️',r:'common',  str:2, atk:5, spd:3,hit:8},
+  wooden_shield: {n:'木の盾',      slot:'lhand',icon:'🛡️',r:'common', def:4},
+  small_shield:  {n:'小盾',        slot:'lhand',icon:'🛡️',r:'common', def:3,mdef:2},
+  iron_helm:     {n:'鉄の兜',      slot:'head', icon:'⛑️',r:'common',  vit:1,def:5},
+  leather_cap:   {n:'革の帽子',    slot:'head', icon:'🎩',r:'common',  spd:1,def:2,eva:3},
+  chain_mail:    {n:'チェインメイル',slot:'armor',icon:'🥋',r:'common', vit:2,def:10},
+  robe:          {n:'ローブ',      slot:'armor',icon:'👘',r:'common',  mag:1,mdef:6},
+  leather_armor: {n:'革の鎧',      slot:'armor',icon:'🥋',r:'common',  def:6,spd:1},
+  iron_boots:    {n:'鉄の靴',      slot:'feet', icon:'👢',r:'common',  def:4,vit:1},
+  leather_boots: {n:'革の靴',      slot:'feet', icon:'👟',r:'common',  spd:2,eva:4},
+  soft_boots:    {n:'軟靴',        slot:'feet', icon:'👟',r:'common',  spd:3,eva:6},
+  mana_ring:     {n:'マナリング',  slot:'acc',  icon:'💍',r:'uncommon', mag:2,mp:20},
+  prayer_bead:   {n:'祈りの数珠',  slot:'acc',  icon:'📿',r:'uncommon', lck:3,mdef:4},
+  // B1-10
+  steel_sword:   {n:'鋼の剣',      slot:'rhand',icon:'⚔️',r:'uncommon', str:6,atk:14,hit:8},
+  fire_staff:    {n:'炎の杖',      slot:'rhand',icon:'🪄',r:'uncommon', mag:6,matk:14},
+  bronze_shield: {n:'銅の盾',      slot:'lhand',icon:'🛡️',r:'common',  def:7,vit:1},
+  steel_helm:    {n:'鋼の兜',      slot:'head', icon:'⛑️',r:'uncommon', vit:2,def:9},
+  scale_armor:   {n:'スケールアーマー',slot:'armor',icon:'🥋',r:'uncommon',vit:3,def:14},
+  speed_boots:   {n:'疾風の靴',    slot:'feet', icon:'👟',r:'uncommon', spd:4,eva:7},
+  power_ring:    {n:'力の指輪',    slot:'acc',  icon:'💍',r:'uncommon', str:5,atk:6},
+  // B11-30
+  elven_bow:     {n:'エルフの弓',  slot:'rhand',icon:'🏹',r:'rare',     str:3,spd:4,atk:10,hit:15},
+  frost_blade:   {n:'氷晶の剣',    slot:'rhand',icon:'⚔️',r:'rare',     str:8,atk:18,hit:10,spd:2},
+  thunder_staff: {n:'雷鳴の杖',    slot:'rhand',icon:'🪄',r:'rare',     mag:9,matk:20,spd:3},
+  dragon_shield: {n:'竜鱗の盾',    slot:'lhand',icon:'🛡️',r:'rare',    def:14,mdef:8},
+  mithril_helm:  {n:'ミスリルの兜',slot:'head', icon:'⛑️',r:'rare',    vit:4,def:14,mdef:5},
+  plate_armor:   {n:'プレートアーマー',slot:'armor',icon:'🥋',r:'rare',  vit:5,def:20},
+  battle_robe:   {n:'バトルローブ',slot:'armor',icon:'👘',r:'rare',     mag:4,matk:8,mdef:12},
+  speed_ring:    {n:'疾風の指輪',  slot:'acc',  icon:'💍',r:'uncommon', spd:5,eva:8},
+  circlet:       {n:'魔法の冠',    slot:'head', icon:'👑',r:'uncommon', mag:4,mdef:5},
+  // B31-60
+  demon_blade:   {n:'魔剣',        slot:'rhand',icon:'⚔️',r:'rare',     str:12,atk:28,hit:12},
+  arcane_tome:   {n:'秘術の書',    slot:'rhand',icon:'📖',r:'rare',     mag:14,matk:30,lck:3},
+  paladin_shield:{n:'聖騎士の盾',  slot:'lhand',icon:'🛡️',r:'rare',    def:18,mdef:15,vit:3},
+  crystal_helm:  {n:'水晶の兜',    slot:'head', icon:'💎',r:'rare',     vit:6,def:18,mag:3},
+  dragon_armor:  {n:'竜甲冑',      slot:'armor',icon:'🥋',r:'rare',     vit:8,def:28,mdef:8},
+  cursed_ring:   {n:'呪いの指輪',  slot:'acc',  icon:'💍',r:'rare',     str:10,atk:15,lck:-5,cursed:true},
+  // B61-100 Legendary
+  excalibur:     {n:'エクスカリバー',slot:'rhand',icon:'✨',r:'legendary',str:18,atk:45,hit:25,lck:10},
+  void_staff:    {n:'虚無の杖',    slot:'rhand',icon:'🌑',r:'legendary', mag:22,matk:55,spd:5},
+  aegis:         {n:'イージス盾',  slot:'lhand',icon:'🛡️',r:'legendary',def:30,mdef:30,vit:10},
+  crown_of_kings:{n:'王冠',        slot:'head', icon:'👑',r:'legendary', str:8,mag:8,vit:8,spd:8,lck:8},
+  dragon_lord:   {n:'竜王の鎧',    slot:'armor',icon:'🥋',r:'legendary', vit:15,def:40,mdef:20},
+  infinity_ring: {n:'無限の指輪',  slot:'acc',  icon:'💍',r:'legendary', str:10,mag:10,vit:10,spd:10,lck:10}
+};
+
+// Consumable items
+const CDATA = {
+  potion:      {n:'ポーション',    icon:'🧪', desc:'HPを100回復', value:80},
+  hi_potion:   {n:'ハイポーション',icon:'🧪', desc:'HPを300回復', value:250},
+  ether:       {n:'エーテル',      icon:'💧', desc:'MPを50回復',  value:120},
+  elixir:      {n:'エリクサー',    icon:'✨', desc:'HP/MP全回復', value:1000},
+  antidote:    {n:'解毒薬',        icon:'💚', desc:'毒を治す',    value:50},
+  eye_drops:   {n:'目薬',          icon:'👁️',desc:'混乱を治す',  value:40},
+  phoenix_down:{n:'フェニックスの羽',icon:'🪶',desc:'戦闘不能を回復',value:500},
+  gold_key:    {n:'金の鍵',        icon:'🗝️',desc:'宝箱を開けられる',value:200},
+  map_fragment:{n:'地図の断片',    icon:'🗺️',desc:'フロアの情報',  value:100}
+};
+
+// Drop tables by floor range
+const DROP_TABLES = {
+  '1-10':  { items:['steel_sword','bronze_shield','scale_armor','steel_helm','speed_boots','power_ring'], consumables:['potion','antidote','gold_key'], goldRange:[20,150] },
+  '11-30': { items:['elven_bow','frost_blade','dragon_shield','mithril_helm','plate_armor','speed_ring','circlet','thunder_staff'], consumables:['potion','hi_potion','ether','antidote','phoenix_down'], goldRange:[100,500] },
+  '31-60': { items:['demon_blade','arcane_tome','paladin_shield','crystal_helm','dragon_armor','cursed_ring','battle_robe'], consumables:['hi_potion','ether','elixir','phoenix_down'], goldRange:[400,1500] },
+  '61-100':{ items:['excalibur','void_staff','aegis','crown_of_kings','dragon_lord','infinity_ring'], consumables:['elixir','phoenix_down','hi_potion'], goldRange:[1000,5000] }
+};
+
+// Starter equipment
+const STARTER = {
+  warrior:{rhand:'iron_sword', lhand:'wooden_shield',head:'iron_helm',  armor:'chain_mail',  feet:'iron_boots',    acc:null},
+  mage:   {rhand:'oak_staff',  lhand:null,           head:null,         armor:'robe',        feet:'leather_boots', acc:'mana_ring'},
+  priest: {rhand:'holy_rod',   lhand:'small_shield', head:null,         armor:'robe',        feet:'leather_boots', acc:'prayer_bead'},
+  thief:  {rhand:'dagger',     lhand:'dagger',       head:'leather_cap',armor:'leather_armor',feet:'soft_boots',   acc:null}
+};
+
+// Town service costs
+const TOWN = {
+  inn_cost: 200,
+  revive_cost: 500,
+  id_item_cost: (r)=>RARITY[r]?.id_cost||100,
+  shop_buy_mult: 1.0,
+  shop_sell_mult: 0.4
 };
 
 // ================================================================
 // DERIVED STATS
 // ================================================================
-function calcDerived(m) {
-  const B = {str:0,mag:0,vit:0,spd:0,lck:0,atk:0,def:0,matk:0,mdef:0,hit:0,eva:0,hp:0,mp:0};
-  SLOT_KEYS.forEach(s => {
-    const item = IDATA[m.equip && m.equip[s]];
-    if (!item) return;
+function calcD(m) {
+  const B={str:0,mag:0,vit:0,spd:0,lck:0,atk:0,def:0,matk:0,mdef:0,hit:0,eva:0,hp:0,mp:0};
+  SK.forEach(s=>{
+    const item=IDATA[m.equip&&m.equip[s]];
+    if(!item||!item.identified&&item.identified===false) return;
     ['str','mag','vit','spd','lck','atk','def','matk','mdef','hit','eva','hp','mp'].forEach(k=>{if(item[k]) B[k]+=item[k];});
   });
-  const s = m.stats;
+  const s=m.stats;
   return {
-    maxHp: Math.floor(s.vit*12 + m.level*5 + 50 + B.hp),
-    maxMp: Math.floor(s.mag*8  + m.level*3 + 10 + B.mp),
-    atk:   Math.floor(s.str*2  + B.atk + B.str),
-    def:   Math.floor(s.vit    + B.def + B.vit*0.5),
-    matk:  Math.floor(s.mag*2  + B.matk + B.mag),
-    mdef:  Math.floor(s.mag + s.lck*0.5 + B.mdef),
-    hit:   Math.floor(s.spd + s.lck*0.5 + B.hit),
-    eva:   Math.floor(s.spd*1.5 + s.lck*0.5 + B.eva),
+    maxHp: Math.floor(s.vit*12+m.level*5+50+B.hp),
+    maxMp: Math.floor(s.mag*8+m.level*3+10+B.mp),
+    atk:   Math.floor(s.str*2+B.atk+B.str),
+    def:   Math.floor(s.vit+B.def+B.vit*0.5),
+    matk:  Math.floor(s.mag*2+B.matk+B.mag),
+    mdef:  Math.floor(s.mag+s.lck*0.5+B.mdef),
+    hit:   Math.floor(s.spd+s.lck*0.5+B.hit),
+    eva:   Math.floor(s.spd*1.5+s.lck*0.5+B.eva),
     crit:  Math.floor(s.lck*2)
   };
 }
 
 // ================================================================
-// DEFAULT PARTY BUILDER
+// DEFAULT PARTY
 // ================================================================
-function makeMember(jobKey, id) {
-  const j = JOBS[jobKey];
-  const base = {str:8,mag:5,vit:8,spd:6,lck:5};
-  if(jobKey==='warrior') {base.str+=4;base.vit+=4;}
-  if(jobKey==='mage')    {base.mag+=6;base.spd+=2;}
-  if(jobKey==='priest')  {base.mag+=4;base.vit+=2;base.lck+=2;}
-  if(jobKey==='thief')   {base.spd+=5;base.lck+=3;base.str+=2;}
-  const m = {
-    id, name:j.name, icon:j.icon, jobKey,
-    level:1, exp:0, expNext:100, pendingPoints:0,
-    stats:{...base},
-    equip:{...STARTER[jobKey]},
-    status:'normal'
-  };
-  const d = calcDerived(m);
-  m.hp = d.maxHp; m.mp = d.maxMp;
+function makeMember(jobKey,id){
+  const j=JOBS[jobKey];
+  const base={str:8,mag:5,vit:8,spd:6,lck:5};
+  if(jobKey==='warrior'){base.str+=4;base.vit+=4;}
+  if(jobKey==='mage'){base.mag+=6;base.spd+=2;}
+  if(jobKey==='priest'){base.mag+=4;base.vit+=2;base.lck+=2;}
+  if(jobKey==='thief'){base.spd+=5;base.lck+=3;base.str+=2;}
+  const m={id,name:j.name,icon:j.icon,jobKey,level:1,exp:0,expNext:100,pendingPoints:0,stats:{...base},equip:{...STARTER[jobKey]},status:'normal'};
+  const d=calcD(m); m.hp=d.maxHp; m.mp=d.maxMp;
   return m;
 }
 
 // ================================================================
-// STATE
+// GAME STATE
 // ================================================================
-const STORAGE_KEY = 'dchrpg_v4';
-const DEFAULT_SETTINGS = {
-  provider:'custom',
-  customUrl:'https://generativelanguage.googleapis.com/v1beta/openai',
-  apiKey:'', model:'gemini-2.0-flash',
-  systemPrompt: buildDefaultPrompt()
+const SK_STORE='dchrpg_v5';
+const DEFAULT_CFG={provider:'custom',customUrl:'https://generativelanguage.googleapis.com/v1beta/openai',apiKey:'',model:'gemini-2.0-flash',systemPrompt:buildSysPrompt()};
+const PROV_URL={openrouter:'https://openrouter.ai/api/v1',openai:'https://api.openai.com/v1'};
+
+let G={
+  party: JK.map((j,i)=>makeMember(j,i)),
+  messages:[],
+  floor:1,
+  maxFloor:1,
+  gold:0,
+  inTown:false,
+  loading:false,
+  cfg:{...DEFAULT_CFG},
+  // Shared bag: [{type:'equip'|'consumable', id, identified, qty}]
+  bag:[],
+  // Unidentified items: stored as {uid, realId, slot, icon, r}
+  nextUid:1
 };
 
-let S = {
-  party: JOB_KEYS.map((j,i)=>makeMember(j,i)),
-  messages: [], floor:1, loading:false,
-  settings:{...DEFAULT_SETTINGS},
-  sharedInventory:[]
-};
-
-function buildDefaultPrompt() {
+function buildSysPrompt(){
   return `【最重要ルール】
 1. 必ず日本語のみで返答してください。英語は絶対使用禁止。
 2. マークダウン(**bold**等)は使用禁止。装飾なしの文章で書いてください。
-3. 返答末尾に必ず下記JSON形式のコードブロックを出力してください。
+3. 返答末尾に必ず下記JSON形式のコードブロックを出力してください（省略不可）。
 
-あなたは熟練したダンジョンRPGのゲームマスターです。4人パーティがダンジョンを探索しています。
+あなたはウィザードリィ風ダンジョンRPGの熟練ゲームマスターです。
+4人パーティがダンジョンを探索しています。
+- ID0:戦士（タンク）ID1:魔法使い（魔法攻撃）ID2:僧侶（回復）ID3:盗賊（素早さ・罠）
 
-パーティ構成:
-- ID0: 戦士（タンク・物理攻撃）, ID1: 魔法使い（魔法攻撃）, ID2: 僧侶（回復）, ID3: 盗賊（素早い攻撃）
+ステータス: 力→攻撃 / 魔力→魔法/MP / 体力→HP/防御 / 速度→命中/回避 / 運→クリティカル
 
-ステータス: 力(STR)→攻撃, 魔力(MAG)→魔法/MP, 体力(VIT)→HP/防御, 速度(SPD)→回避/命中, 運(LCK)→クリティカル
+【ゴールド・アイテム入手ルール】
+- 敵を倒したらgoldGainedに金額を設定する（戦闘なし時は0）
+- アイテム入手時はitemsDroppedに設定する（装備IDまたはconsumable ID）
+- 宝箱の場合は豪華なドロップにする
+- 一部の装備は鑑定前（unidentified:true）で出てよい
+- ダンジョンを降りる際はfloorDownを1に
+- 転移陣が見つかったらtransferCircleFoundをtrueに
 
-戦闘で敵を倒した場合のみexpGainedに値を入れてください（0以外）。
-アイテムが手に入った場合はitemsFoundに記載してください。
-利用可能なアイテムID: steel_sword, fire_staff, elven_bow, plate_armor, dragon_shield, speed_ring, power_ring, circlet
+【利用可能消耗品ID】potion,hi_potion,ether,elixir,antidote,phoenix_down,gold_key,map_fragment
+【利用可能装備ID(フロアに応じて)】B1-10:steel_sword,bronze_shield,scale_armor,steel_helm,speed_boots,power_ring / B11-30:elven_bow,frost_blade,thunder_staff,dragon_shield,mithril_helm,plate_armor,battle_robe,speed_ring / B31-60:demon_blade,arcane_tome,paladin_shield,crystal_helm,dragon_armor / B61-100:excalibur,void_staff,aegis,crown_of_kings,dragon_lord,infinity_ring
 
-必ず返答末尾にこのJSONコードブロックを出力:
+返答末尾に必ずこのJSONコードブロックを出力:
 
 \`\`\`json
 {
@@ -403,503 +513,653 @@ function buildDefaultPrompt() {
       {"id":2,"hp":90,"maxHp":90,"mp":90,"maxMp":90,"status":"normal"},
       {"id":3,"hp":80,"maxHp":80,"mp":50,"maxMp":50,"status":"normal"}
     ],
-    "floor":1, "event":"exploration", "expGained":0, "itemsFound":[]
+    "floor":1,
+    "event":"exploration",
+    "expGained":0,
+    "goldGained":0,
+    "floorDown":0,
+    "transferCircleFound":false,
+    "itemsDropped":[]
   }
 }
 \`\`\`
 
-event: exploration/battle/treasure/boss/rest/trap
-status: normal/poisoned/burned/frozen/stunned/dead`;
+event:exploration/battle/treasure/boss/rest/trap
+status:normal/poisoned/burned/frozen/stunned/dead
+itemsDropped例:["steel_sword","potion",{"id":"frost_blade","unidentified":true}]`;
 }
 
 // ================================================================
 // INIT
 // ================================================================
-function init() {
+function init(){
   loadState();
   renderParty();
-  renderAllMessages();
+  renderMessages();
+  updateHdr();
   updateBadges();
-  if (!S.messages.length) {
-    pushSys('右上のAPIキー(⚙)を設定して冒険を始めよう！Google AI StudioのGeminiが無料でおすすめです。');
-    pushNarrator('闇に沈むダンジョンの入口。湿った石の匂いと、遠くから聞こえる不気味な唸り声——\n松明の炎が4人の冒険者たちの顔を照らし出す。\n「ここから先、退路はない」と戦士は低く呟いた。\n——さあ、何をする？', false);
+  updateQuickBar();
+  if(!G.messages.length){
+    pushSys('⚙ 右上のAPIキーを設定して冒険を始めよう！');
+    pushNarr('闇に沈むダンジョンの入口。湿った石の匂いと、遠くから聞こえる不気味な唸り声——\n松明の炎が4人の冒険者たちの顔を照らし出す。\n「ここから先、退路はない」と戦士は低く呟いた。\n——さあ、何をする？', false);
     saveState();
   }
-  if (!S.settings.apiKey) setTimeout(openSettings, 700);
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  if(!G.cfg.apiKey) setTimeout(openSettings,700);
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
 // ================================================================
-// RENDER PARTY
+// HEADER & QUICKBAR
 // ================================================================
-const SL = { normal:'正常', poisoned:'毒', burned:'炎上', frozen:'氷結', stunned:'スタン', dead:'戦闘不能' };
+function updateHdr(){
+  const fl=document.getElementById('loc-badge');
+  const gd=document.getElementById('gold-badge');
+  if(G.inTown){
+    fl.textContent='街';
+    fl.className='location-badge town';
+  } else {
+    fl.textContent=`B${G.floor}F`;
+    fl.className='location-badge dungeon';
+  }
+  gd.textContent=`G: ${G.gold.toLocaleString()}`;
+}
 
-function renderParty() {
-  document.getElementById('party-grid').innerHTML = S.party.map(m => {
-    const d = calcDerived(m);
-    const hpP  = Math.max(0,Math.min(100,(m.hp/d.maxHp)*100));
-    const mpP  = Math.max(0,Math.min(100,(m.mp/d.maxMp)*100));
-    const expP = Math.max(0,Math.min(100,(m.exp/m.expNext)*100));
-    const dead = m.status==='dead'||m.hp<=0;
-    const low  = hpP<30&&!dead;
-    const lu   = m.pendingPoints>0;
-    return `<div class="member-card ${dead?'dead':''} ${low?'low-hp':''} ${lu?'levelup-ready':''}" onclick="cardTap(${m.id})">
+const DUNGEON_ACTIONS=[
+  ['周囲を探索する','探索'],['前進する','前進'],['敵に攻撃する','攻撃'],
+  ['魔法を詠唱する','魔法'],['回復する','回復'],['宝箱を調べる','宝箱'],
+  ['逃げる！','逃走'],['休憩する','休憩'],['階段を降りる','降下'],
+];
+const TOWN_ACTIONS=[
+  ['宿屋で休む','宿屋'],['神殿で蘇生を頼む','神殿'],['道具屋へ行く','道具屋'],
+  ['武器屋へ行く','武器屋'],['アイテムを鑑定してもらう','鑑定'],['ダンジョンへ戻る','出発'],
+];
+
+function updateQuickBar(){
+  const bar=document.getElementById('quick-bar');
+  const acts=G.inTown?TOWN_ACTIONS:DUNGEON_ACTIONS;
+  bar.innerHTML=acts.map(([a,l])=>`<button class="qbtn ${G.inTown?'town-btn':''}" onclick="quickAct(${JSON.stringify(a)})">${l}</button>`).join('');
+}
+
+function updateBadges(){
+  document.getElementById('dot-lv').style.display=G.party.some(m=>m.pendingPoints>0)?'block':'none';
+  const unid=G.bag.filter(b=>b.type==='equip'&&b.identified===false).length;
+  document.getElementById('dot-bag').style.display=unid>0?'block':'none';
+}
+
+// ================================================================
+// PARTY RENDER
+// ================================================================
+const SL={normal:'正常',poisoned:'毒',burned:'炎上',frozen:'氷結',stunned:'スタン',dead:'戦闘不能'};
+
+function renderParty(){
+  document.getElementById('party-grid').innerHTML=G.party.map(m=>{
+    const d=calcD(m);
+    const hpp=clamp((m.hp/d.maxHp)*100),mpp=clamp((m.mp/d.maxMp)*100),expp=clamp((m.exp/m.expNext)*100);
+    const dead=m.status==='dead'||m.hp<=0,low=hpp<30&&!dead,lu=m.pendingPoints>0;
+    return `<div class="member-card ${dead?'dead':''} ${low?'low-hp':''} ${lu?'lu-ready':''}" onclick="cardTap(${m.id})">
       <div class="member-top"><span class="member-icon">${m.icon}</span><span class="member-name">${esc(m.name)}</span><span class="member-lv">Lv${m.level}</span></div>
-      <div class="bar-wrap"><div class="bar-row"><span>HP</span><span>${m.hp}/${d.maxHp}</span></div><div class="bar-track"><div class="hp-fill ${low?'danger':''}" style="width:${hpP}%"></div></div></div>
-      <div class="bar-wrap"><div class="bar-row"><span>MP</span><span>${m.mp}/${d.maxMp}</span></div><div class="bar-track"><div class="mp-fill" style="width:${mpP}%"></div></div></div>
-      <div class="bar-wrap"><div class="bar-row"><span>EXP</span><span>${m.exp}/${m.expNext}</span></div><div class="bar-track"><div class="exp-fill" style="width:${expP}%"></div></div></div>
-      <span class="status-chip ${m.status!=='normal'?m.status:''}">${SL[m.status]||m.status}</span>
+      <div class="bar-wrap"><div class="bar-row"><span>HP</span><span>${m.hp}/${d.maxHp}</span></div><div class="bar-track"><div class="hp-fill ${low?'danger':''}" style="width:${hpp}%"></div></div></div>
+      <div class="bar-wrap"><div class="bar-row"><span>MP</span><span>${m.mp}/${d.maxMp}</span></div><div class="bar-track"><div class="mp-fill" style="width:${mpp}%"></div></div></div>
+      <div class="bar-wrap"><div class="bar-row"><span>EXP</span><span>${m.exp}/${m.expNext}</span></div><div class="bar-track"><div class="exp-fill" style="width:${expp}%"></div></div></div>
+      <span class="sc ${m.status!=='normal'?m.status:''}">${SL[m.status]||m.status}</span>
     </div>`;
   }).join('');
-  document.getElementById('floor-badge').textContent = `B${S.floor}F`;
 }
 
-function updateBadges() {
-  document.getElementById('dot-levelup').style.display = S.party.some(m=>m.pendingPoints>0)?'block':'none';
-}
-
-function cardTap(id) {
-  const m = S.party.find(x=>x.id===id);
-  if (m && m.pendingPoints>0) openLevelUpModal(id);
-  else { eqActive=id; renderEqTabs(); renderEqContent(); openModal('modal-equip'); }
+function cardTap(id){
+  const m=G.party.find(x=>x.id===id);
+  if(m&&m.pendingPoints>0){openLvModal(id);}
+  else{eqActive=id;renderEqTabs();renderEqContent();openM('m-equip');}
 }
 
 // ================================================================
-// STATUS APPLY
+// STATUS UPDATE FROM AI
 // ================================================================
-function applyStatus(data) {
-  if (!data) return;
-  if (Array.isArray(data.party)) {
-    data.party.forEach(u => {
-      const m = S.party.find(x=>x.id===u.id);
-      if (!m) return;
-      if (u.hp !== undefined) m.hp = Math.max(0, u.hp);
-      if (u.status) m.status = u.status;
+function applyStatus(data){
+  if(!data) return;
+  if(Array.isArray(data.party)){
+    data.party.forEach(u=>{
+      const m=G.party.find(x=>x.id===u.id);
+      if(!m) return;
+      if(u.hp!==undefined) m.hp=Math.max(0,u.hp);
+      if(u.status) m.status=u.status;
     });
   }
-  if (data.floor) S.floor = data.floor;
-  if (data.expGained && data.expGained>0) {
-    S.party.forEach(m => { if(m.status!=='dead') addExp(m, data.expGained); });
+  if(data.floor) G.floor=Math.max(1,Math.min(100,data.floor));
+  if(G.floor>G.maxFloor) G.maxFloor=G.floor;
+
+  // EXP
+  if(data.expGained>0) G.party.forEach(m=>{if(m.status!=='dead') addExp(m,data.expGained);});
+
+  // Gold
+  if(data.goldGained>0){
+    G.gold+=data.goldGained;
+    pushSys(`G: +${data.goldGained}ゴールド入手！（所持: ${G.gold}G）`);
   }
-  if (Array.isArray(data.itemsFound)) {
-    data.itemsFound.forEach(id => {
-      if (IDATA[id]) { S.sharedInventory.push(id); pushSys(`アイテム入手: ${IDATA[id].name}`); }
+
+  // Items dropped
+  if(Array.isArray(data.itemsDropped) && data.itemsDropped.length>0){
+    data.itemsDropped.forEach(drop=>{
+      if(typeof drop==='string') addDrop(drop, false);
+      else if(drop.id) addDrop(drop.id, !!drop.unidentified);
     });
   }
-  renderParty(); updateBadges();
+
+  // Floor down
+  if(data.floorDown>0){
+    G.floor=Math.min(100, G.floor+data.floorDown);
+    if(G.floor>G.maxFloor) G.maxFloor=G.floor;
+    pushSys(`階段を降りた。現在: B${G.floor}F`);
+  }
+
+  // Transfer circle
+  if(data.transferCircleFound){
+    pushSys('✨ 転移陣を発見！街へ戻れます。（「街へ戻る」ボタンまたは転移陣を使うと告げてください）');
+    // Add town return btn to quick bar supplement
+    if(!G.inTown){
+      const bar=document.getElementById('quick-bar');
+      if(!bar.querySelector('.portal-btn')){
+        const btn=document.createElement('button');
+        btn.className='qbtn portal-btn';
+        btn.style.color='#22aa55';btn.style.borderColor='#22aa55';
+        btn.textContent='転移陣';
+        btn.onclick=()=>openM('m-town');
+        bar.appendChild(btn);
+      }
+    }
+  }
+
+  renderParty(); updateBadges(); updateHdr();
+}
+
+function addDrop(id, unidentified){
+  if(IDATA[id]){
+    const item=IDATA[id];
+    const uid=G.nextUid++;
+    G.bag.push({type:'equip',id,identified:!unidentified,uid,slot:item.slot,r:item.r});
+    if(unidentified){
+      const slotLabel=SLOTS[item.slot]||item.slot;
+      pushSys(`📦 未鑑定の${slotLabel}を入手（?? の何か）`);
+    } else {
+      pushSys(`📦 ${item.icon} ${item.n} を入手！`);
+    }
+  } else if(CDATA[id]){
+    const existing=G.bag.find(b=>b.type==='consumable'&&b.id===id);
+    if(existing) existing.qty++;
+    else G.bag.push({type:'consumable',id,qty:1});
+    pushSys(`📦 ${CDATA[id].icon} ${CDATA[id].n} を入手！`);
+  }
 }
 
 // ================================================================
-// EXP & LEVEL UP
+// EXP / LEVEL UP
 // ================================================================
-function addExp(m, amt) {
-  m.exp += amt;
-  while (m.exp >= m.expNext) { m.exp -= m.expNext; levelUp(m); }
-}
-function levelUp(m) {
-  m.level++;
-  m.expNext = Math.floor(m.expNext * 1.4);
-  const j = JOBS[m.jobKey];
-  if (j) { Object.entries(j.auto).forEach(([k,v])=>m.stats[k]+=v); m.pendingPoints += j.pts; }
-  else m.pendingPoints += 3;
-  const d = calcDerived(m);
-  m.hp = d.maxHp; m.mp = d.maxMp;
-  pushSys(`${m.name}がレベル${m.level}にアップ！(LVボタンからステータスを割り振ろう)`);
+function addExp(m,amt){m.exp+=amt;while(m.exp>=m.expNext){m.exp-=m.expNext;levelUp(m);}}
+function levelUp(m){
+  m.level++;m.expNext=Math.floor(m.expNext*1.4);
+  const j=JOBS[m.jobKey];
+  if(j){Object.entries(j.auto).forEach(([k,v])=>m.stats[k]+=v);m.pendingPoints+=j.pts;}
+  else m.pendingPoints+=3;
+  const d=calcD(m);m.hp=d.maxHp;m.mp=d.maxMp;
+  pushSys(`⬆ ${m.name}がLv${m.level}にアップ！（LVボタンでステータスを割り振ろう）`);
 }
 
-// LEVEL UP MODAL
-let luActive = 0;
-let luTemp   = {};
-
-function openLevelUpModal(id) {
-  const members = S.party.filter(m=>m.pendingPoints>0);
-  if (!members.length) { pushSys('レベルアップ待ちのメンバーはいません。'); return; }
-  luActive = id !== undefined ? id : members[0].id;
-  luTemp = {};
-  S.party.forEach(m=>luTemp[m.id]={str:0,mag:0,vit:0,spd:0,lck:0});
-  renderLuTabs(); renderLuContent();
-  openModal('modal-lu');
+// LV MODAL
+let luAct=0,luTmp={};
+function openLvModal(id){
+  const ms=G.party.filter(m=>m.pendingPoints>0);
+  if(!ms.length){pushSys('レベルアップ待ちのメンバーはいません。');return;}
+  luAct=id!==undefined?id:ms[0].id;
+  luTmp={};G.party.forEach(m=>luTmp[m.id]={str:0,mag:0,vit:0,spd:0,lck:0});
+  renderLuTabs();renderLuCon();openM('m-lu');
 }
-
-function renderLuTabs() {
-  const members = S.party.filter(m=>m.pendingPoints>0);
-  document.getElementById('lu-tabs').innerHTML = members.map(m=>
-    `<button class="tab-btn ${m.id===luActive?'active':''}" onclick="luSwitchMember(${m.id},this)">${m.icon}${m.name}</button>`
+function renderLuTabs(){
+  document.getElementById('lu-tabs').innerHTML=G.party.filter(m=>m.pendingPoints>0).map(m=>
+    `<button class="tab-btn ${m.id===luAct?'active':''}" onclick="luSwitch(${m.id},this)">${m.icon}${m.name}</button>`
   ).join('');
 }
-function luSwitchMember(id, el) {
-  luActive = id;
-  document.querySelectorAll('#lu-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  renderLuContent();
-}
-function renderLuContent() {
-  const m = S.party.find(x=>x.id===luActive);
-  if (!m) return;
-  const tp = luTemp[m.id];
-  const spent = Object.values(tp).reduce((a,b)=>a+b,0);
-  const rem = m.pendingPoints - spent;
-  const SINFO = [
-    {k:'str',l:'力',   d:'攻撃力・物理ダメージ'},
-    {k:'mag',l:'魔力', d:'魔法攻撃・MPの最大値'},
-    {k:'vit',l:'体力', d:'HPの最大値・防御力'},
-    {k:'spd',l:'速度', d:'回避率・命中率'},
-    {k:'lck',l:'運',   d:'クリティカル・運全般'}
-  ];
-  const j = JOBS[m.jobKey];
-  document.getElementById('lu-content').innerHTML =
-    `<div class="lu-points-left">割り振り可能ポイント: <strong style="color:#c9a227;font-size:18px">${rem}</strong></div>
+function luSwitch(id,el){luAct=id;document.querySelectorAll('#lu-tabs .tab-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderLuCon();}
+function renderLuCon(){
+  const m=G.party.find(x=>x.id===luAct);if(!m) return;
+  const tp=luTmp[m.id];const spent=sum(Object.values(tp));const rem=m.pendingPoints-spent;
+  const SI=[{k:'str',l:'力',d:'攻撃力・物理ダメージ'},{k:'mag',l:'魔力',d:'魔法攻撃・MPの最大値'},{k:'vit',l:'体力',d:'HPの最大値・防御力'},{k:'spd',l:'速度',d:'回避率・命中率'},{k:'lck',l:'運',d:'クリティカル・運全般'}];
+  const j=JOBS[m.jobKey];
+  document.getElementById('lu-content').innerHTML=`<div class="lu-rem">割り振り可能ポイント: <strong style="color:#c9a227;font-size:18px">${rem}</strong></div>
     <button class="auto-btn" onclick="luAuto()">職業自動割り振り (${j?j.name:''}推奨)</button>
-    ${SINFO.map(s=>`<div class="lu-stat-row">
-      <span class="lu-stat-name">${s.l}</span>
-      <span class="lu-stat-desc">${s.d}</span>
+    ${SI.map(s=>`<div class="lu-row"><span class="lu-name">${s.l}</span><span class="lu-desc">${s.d}</span>
       <button class="lu-btn" onclick="luAdj('${s.k}',-1)" ${tp[s.k]<=0?'disabled':''}>-</button>
-      <span class="lu-stat-val">${m.stats[s.k]+tp[s.k]}</span>
-      <button class="lu-btn" onclick="luAdj('${s.k}',+1)" ${rem<=0?'disabled':''}>+</button>
+      <span class="lu-val">${m.stats[s.k]+tp[s.k]}</span>
+      <button class="lu-btn" onclick="luAdj('${s.k}',1)" ${rem<=0?'disabled':''}>+</button>
     </div>`).join('')}`;
 }
-function luAdj(k, d) {
-  const m = S.party.find(x=>x.id===luActive);
-  const tp = luTemp[m.id];
-  const spent = Object.values(tp).reduce((a,b)=>a+b,0);
-  const rem = m.pendingPoints - spent;
-  if (d>0 && rem<=0) return;
-  if (d<0 && tp[k]<=0) return;
-  tp[k]+=d; renderLuContent();
-}
-function luAuto() {
-  const m = S.party.find(x=>x.id===luActive);
-  const tp = luTemp[m.id];
-  Object.keys(tp).forEach(k=>tp[k]=0);
-  const j = JOBS[m.jobKey];
-  if (!j) return;
-  let rem = m.pendingPoints;
-  while (rem>0) {
-    const sorted = Object.entries(j.auto).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-    for (const [k] of sorted) { if(rem<=0) break; tp[k]++; rem--; }
-    if (!sorted.length) { tp['str']++; rem--; }
-  }
-  renderLuContent();
-}
-function confirmLevelUp() {
-  S.party.forEach(m => {
-    const tp = luTemp[m.id];
-    if (!tp) return;
-    Object.keys(tp).forEach(k=>m.stats[k]+=tp[k]);
-    const spent = Object.values(tp).reduce((a,b)=>a+b,0);
-    m.pendingPoints = Math.max(0, m.pendingPoints-spent);
-    const d = calcDerived(m);
-    m.hp=Math.min(m.hp,d.maxHp); m.mp=Math.min(m.mp,d.maxMp);
-  });
-  closeModal('modal-lu'); renderParty(); updateBadges(); saveState();
+function luAdj(k,d){const m=G.party.find(x=>x.id===luAct);const tp=luTmp[m.id];const rem=m.pendingPoints-sum(Object.values(tp));if(d>0&&rem<=0)return;if(d<0&&tp[k]<=0)return;tp[k]+=d;renderLuCon();}
+function luAuto(){const m=G.party.find(x=>x.id===luAct);const tp=luTmp[m.id];Object.keys(tp).forEach(k=>tp[k]=0);const j=JOBS[m.jobKey];if(!j) return;let r=m.pendingPoints;while(r>0){const s=Object.entries(j.auto).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);for(const[k]of s){if(r<=0)break;tp[k]++;r--;}if(!s.length){tp['str']++;r--;}}renderLuCon();}
+function confirmLu(){
+  G.party.forEach(m=>{const tp=luTmp[m.id];if(!tp)return;Object.keys(tp).forEach(k=>m.stats[k]+=tp[k]);const sp=sum(Object.values(tp));m.pendingPoints=Math.max(0,m.pendingPoints-sp);const d=calcD(m);m.hp=Math.min(m.hp,d.maxHp);m.mp=Math.min(m.mp,d.maxMp);});
+  closeM('m-lu');renderParty();updateBadges();saveState();
 }
 
 // ================================================================
 // EQUIPMENT MODAL
 // ================================================================
-let eqActive = 0;
-let eqSlot   = null;
-
-function openEquipModal() { eqActive=0; renderEqTabs(); renderEqContent(); openModal('modal-equip'); }
-
-function renderEqTabs() {
-  document.getElementById('eq-tabs').innerHTML = S.party.map(m=>
-    `<button class="tab-btn ${m.id===eqActive?'active':''}" onclick="eqSwitch(${m.id},this)">${m.icon}${m.name}</button>`
-  ).join('');
-}
-function eqSwitch(id, el) {
-  eqActive=id;
-  document.querySelectorAll('#eq-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  renderEqContent();
-}
-function renderEqContent() {
-  const m = S.party.find(x=>x.id===eqActive);
-  if (!m) return;
-  const d = calcDerived(m);
-  const slots = SLOT_KEYS.map(s=>{
-    const item = IDATA[m.equip && m.equip[s]];
-    return `<div class="equip-slot ${item?'':'empty'}" onclick="openItemSelect(${m.id},'${s}')">
-      <div class="equip-slot-label">${SLOT_LABELS[s]}</div>
-      <div class="equip-slot-item">${item?item.icon+' '+item.name:'── なし ──'}</div>
-      <div class="equip-slot-stats">${item?istatStr(item):''}</div>
+let eqActive=0,eqSlot=null;
+function openEquipModal(){eqActive=0;renderEqTabs();renderEqContent();openM('m-equip');}
+function renderEqTabs(){document.getElementById('eq-tabs').innerHTML=G.party.map(m=>`<button class="tab-btn ${m.id===eqActive?'active':''}" onclick="eqSwitch(${m.id},this)">${m.icon}${m.name}</button>`).join('');}
+function eqSwitch(id,el){eqActive=id;document.querySelectorAll('#eq-tabs .tab-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderEqContent();}
+function renderEqContent(){
+  const m=G.party.find(x=>x.id===eqActive);if(!m) return;
+  const d=calcD(m);
+  const slots=SK.map(s=>{
+    const eid=m.equip&&m.equip[s];
+    const bagItem=G.bag.find(b=>b.type==='equip'&&b.uid===eid);
+    const item=bagItem?IDATA[bagItem.id]:IDATA[eid];
+    const isUnid=bagItem&&!bagItem.identified;
+    return `<div class="eslot ${item?'':'empty'} ${isUnid?'unid':''}" onclick="openIsel(${m.id},'${s}')">
+      <div class="eslot-label">${SLOTS[s]}</div>
+      <div class="eslot-item">${item?(isUnid?'❓ ???の'+SLOTS[s]:item.icon+' '+item.n):'── なし ──'}</div>
+      <div class="eslot-stats">${item&&!isUnid?istat(item):isUnid?'<span style="color:#9966cc">未鑑定</span>':''}</div>
     </div>`;
   }).join('');
-  document.getElementById('eq-content').innerHTML =
-    `<div class="equip-grid">${slots}</div>
-    <div class="divider"></div>
-    <div class="form-label">派生ステータス</div>
+  document.getElementById('eq-content').innerHTML=`<div class="equip-grid">${slots}</div>
+    <div class="divider"></div><div class="flabel">派生ステータス</div>
     <div class="stat-grid">
-      <div class="stat-row"><span class="stat-key">ATK攻撃力</span><span class="stat-val">${d.atk}</span></div>
-      <div class="stat-row"><span class="stat-key">DEF防御力</span><span class="stat-val">${d.def}</span></div>
-      <div class="stat-row"><span class="stat-key">MAT魔法攻</span><span class="stat-val">${d.matk}</span></div>
-      <div class="stat-row"><span class="stat-key">MDF魔法防</span><span class="stat-val">${d.mdef}</span></div>
-      <div class="stat-row"><span class="stat-key">HIT命中率</span><span class="stat-val">${d.hit}</span></div>
-      <div class="stat-row"><span class="stat-key">EVA回避率</span><span class="stat-val">${d.eva}</span></div>
-      <div class="stat-row"><span class="stat-key">CRT会心率</span><span class="stat-val">${d.crit}%</span></div>
-      <div class="stat-row"><span class="stat-key">MaxHP</span><span class="stat-val">${d.maxHp}</span></div>
-      <div class="stat-row"><span class="stat-key">MaxMP</span><span class="stat-val">${d.maxMp}</span></div>
+      <div class="stat-row"><span class="skey">ATK攻撃</span><span class="sval">${d.atk}</span></div>
+      <div class="stat-row"><span class="skey">DEF防御</span><span class="sval">${d.def}</span></div>
+      <div class="stat-row"><span class="skey">MAT魔法攻</span><span class="sval">${d.matk}</span></div>
+      <div class="stat-row"><span class="skey">MDF魔法防</span><span class="sval">${d.mdef}</span></div>
+      <div class="stat-row"><span class="skey">HIT命中</span><span class="sval">${d.hit}</span></div>
+      <div class="stat-row"><span class="skey">EVA回避</span><span class="sval">${d.eva}</span></div>
+      <div class="stat-row"><span class="skey">CRT会心</span><span class="sval">${d.crit}%</span></div>
+      <div class="stat-row"><span class="skey">MaxHP</span><span class="sval">${d.maxHp}</span></div>
+      <div class="stat-row"><span class="skey">MaxMP</span><span class="sval">${d.maxMp}</span></div>
     </div>
-    <div class="divider"></div>
-    <div class="form-label">基本ステータス</div>
+    <div class="divider"></div><div class="flabel">基本ステータス</div>
     <div class="stat-grid">
-      <div class="stat-row"><span class="stat-key">力 STR</span><span class="stat-val">${m.stats.str}</span></div>
-      <div class="stat-row"><span class="stat-key">魔力 MAG</span><span class="stat-val">${m.stats.mag}</span></div>
-      <div class="stat-row"><span class="stat-key">体力 VIT</span><span class="stat-val">${m.stats.vit}</span></div>
-      <div class="stat-row"><span class="stat-key">速度 SPD</span><span class="stat-val">${m.stats.spd}</span></div>
-      <div class="stat-row"><span class="stat-key">運  LCK</span><span class="stat-val">${m.stats.lck}</span></div>
+      ${['str:力','mag:魔力','vit:体力','spd:速度','lck:運'].map(x=>{const[k,l]=x.split(':');return`<div class="stat-row"><span class="skey">${l}</span><span class="sval">${m.stats[k]}</span></div>`;}).join('')}
     </div>`;
 }
 
-function istatStr(item) {
+function openIsel(memberId,slot){
+  eqActive=memberId;eqSlot=slot;
+  const m=G.party.find(x=>x.id===memberId);
+  const curUid=m.equip&&m.equip[slot];
+  // Gather equippable items from bag for this slot
+  const available=G.bag.filter(b=>b.type==='equip'&&IDATA[b.id]&&IDATA[b.id].slot===slot);
+  document.getElementById('isel-title').textContent=`${SLOTS[slot]} — ${m.name}`;
+  const list=document.getElementById('isel-list');
+  if(!available.length){list.innerHTML=`<div style="text-align:center;color:#5a4a3a;font-size:13px;padding:14px">このスロット用のアイテムがありません</div>`;openM('m-isel');return;}
+  list.innerHTML=available.map(b=>{
+    const item=IDATA[b.id];const isUnid=!b.identified;const isCur=b.uid===curUid;
+    const rc=RARITY[item.r]?.c||'';
+    return `<div class="irow ${isCur?'equipped':''} ${isUnid?'unidentified':''}" onclick="equipI(${b.uid})">
+      <div><div class="iname ${isUnid?'unid-color':''}"><span class="${rc}">${isUnid?'❓ ???の'+SLOTS[slot]:item.icon+' '+item.n}</span> ${isCur?'<span style="color:#c9a227;font-size:10px">装備中</span>':''}</div>
+      <div class="istats">${isUnid?'未鑑定（鑑定が必要）':istat(item)}</div></div>
+      <div class="iact">${isCur?'✓':'装備'}</div>
+    </div>`;
+  }).join('');
+  openM('m-isel');
+}
+
+function equipI(uid){
+  const m=G.party.find(x=>x.id===eqActive);if(!m) return;
+  const slot=eqSlot;
+  const oldUid=m.equip[slot];
+  // Old item stays in bag (just update pointer)
+  m.equip[slot]=uid;
+  closeM('m-isel');renderEqContent();renderParty();saveState();
+}
+
+function unequipSlot(){
+  const m=G.party.find(x=>x.id===eqActive);if(!m||!eqSlot) return;
+  m.equip[eqSlot]=null;
+  closeM('m-isel');renderEqContent();renderParty();saveState();
+}
+
+function istat(item){
   const K={str:'力',mag:'魔',vit:'体',spd:'速',lck:'運',atk:'ATK',def:'DEF',matk:'MAT',mdef:'MDF',hit:'命',eva:'回',hp:'HP',mp:'MP'};
-  return Object.entries(K).filter(([k])=>item[k]).map(([k,l])=>`${l}+${item[k]}`).join(' ');
+  return Object.entries(K).filter(([k])=>item[k]).map(([k,l])=>`${l}${item[k]>0?'+':''}${item[k]}`).join(' ');
 }
 
-function openItemSelect(memberId, slot) {
-  eqActive = memberId; eqSlot = slot;
-  const m = S.party.find(x=>x.id===memberId);
-  const curId = m.equip && m.equip[slot];
-  const owned = [];
-  if (curId && IDATA[curId]) owned.push(IDATA[curId]);
-  S.sharedInventory.filter(id=>IDATA[id]&&IDATA[id].slot===slot&&id!==curId)
-    .forEach(id=>owned.push(IDATA[id]));
+// ================================================================
+// BAG MODAL
+// ================================================================
+function openBagModal(){
+  document.getElementById('gold-display').textContent=`${G.gold.toLocaleString()} ゴールド`;
+  const list=document.getElementById('bag-list');
+  if(!G.bag.length){list.innerHTML=`<div style="text-align:center;color:#5a4a3a;font-size:13px;padding:12px">所持品なし</div>`;openM('m-bag');return;}
 
-  document.getElementById('item-modal-title').textContent = `${SLOT_LABELS[slot]} — ${m.name}`;
-  document.getElementById('item-modal-list').innerHTML = owned.length
-    ? owned.map(item=>`<div class="item-row ${curId===item.id?'equipped':''}" onclick="equipItem('${item.id}')">
-        <div><div class="item-name">${item.icon} ${item.name} ${curId===item.id?'<span style="color:#c9a227;font-size:10px">装備中</span>':''}</div>
-        <div class="item-stats">${istatStr(item)}</div></div>
-        <div class="item-action">${curId===item.id?'✓':'装備'}</div>
-      </div>`).join('')
-    : `<div style="text-align:center;color:#5a4a3a;font-size:13px;padding:16px">このスロット用のアイテムがありません</div>`;
-  openModal('modal-item');
+  // Equip items
+  const equipRows=G.bag.filter(b=>b.type==='equip').map(b=>{
+    const item=IDATA[b.id];const isUnid=!b.identified;const rc=RARITY[item.r]?.c||'';
+    return `<div class="inv-row">
+      <div class="inv-name ${isUnid?'unid-color':''}">
+        <span class="${rc}">${isUnid?'❓ 未鑑定の'+SLOTS[item.slot]:item.icon+' '+item.n}</span>
+        ${item.cursed&&b.identified?'<span style="color:#883333;font-size:10px"> 呪</span>':''}
+      </div>
+      <div class="inv-btns">
+        ${isUnid?`<button class="inv-btn" onclick="quickIdItem(${b.uid})">鑑定(${RARITY[b.r]?.id_cost}G)</button>`:''}
+        <button class="inv-btn red" onclick="sellItem(${b.uid})">売(${Math.floor((item.r==='legendary'?5000:item.r==='rare'?1000:item.r==='uncommon'?200:50)*0.4)}G)</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Consumables
+  const consRows=G.bag.filter(b=>b.type==='consumable').map(b=>{
+    const item=CDATA[b.id];
+    return `<div class="inv-row">
+      <div class="inv-name">${item.icon} ${item.n}</div>
+      <div class="inv-qty">x${b.qty}</div>
+      <div class="inv-btns">
+        <button class="inv-btn" onclick="useConsumable('${b.id}')">使用</button>
+        <button class="inv-btn red" onclick="dropConsumable('${b.id}')">捨</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  list.innerHTML=(equipRows+consRows)||`<div style="text-align:center;color:#5a4a3a;font-size:13px;padding:12px">所持品なし</div>`;
+  openM('m-bag');
 }
 
-function equipItem(itemId) {
-  const m = S.party.find(x=>x.id===eqActive);
-  if (!m) return;
-  const oldId = m.equip[eqSlot];
-  if (oldId && S.sharedInventory.includes(itemId)) {
-    S.sharedInventory = S.sharedInventory.filter(id=>id!==itemId);
+function quickIdItem(uid){
+  const b=G.bag.find(x=>x.uid===uid);if(!b) return;
+  const cost=RARITY[b.r]?.id_cost||100;
+  if(G.gold<cost){pushSys(`鑑定には${cost}Gが必要です（所持: ${G.gold}G）`);return;}
+  G.gold-=cost;b.identified=true;
+  const item=IDATA[b.id];
+  pushSys(`鑑定完了: ${item.icon} ${item.n}! (${istat(item)})`);
+  openBagModal();updateHdr();updateBadges();saveState();
+}
+
+function sellItem(uid){
+  const b=G.bag.find(x=>x.uid===uid);if(!b) return;
+  const item=IDATA[b.id];
+  const baseVal={legendary:5000,rare:1000,uncommon:200,common:50}[item.r]||50;
+  const val=Math.floor(baseVal*0.4);
+  G.gold+=val;
+  G.bag=G.bag.filter(x=>x.uid!==uid);
+  // Unequip if equipped
+  G.party.forEach(m=>SK.forEach(s=>{if(m.equip[s]===uid) m.equip[s]=null;}));
+  pushSys(`${item.n}を${val}Gで売却した。`);
+  openBagModal();renderParty();updateHdr();saveState();
+}
+
+function useConsumable(id){
+  const b=G.bag.find(x=>x.type==='consumable'&&x.id===id);if(!b) return;
+  const item=CDATA[id];
+  if(id==='potion')       healParty(100,0);
+  else if(id==='hi_potion') healParty(300,0);
+  else if(id==='ether')   healParty(0,50);
+  else if(id==='elixir')  healParty(9999,9999);
+  else if(id==='antidote') curePoisoned();
+  else if(id==='phoenix_down') reviveOne();
+  else{pushSys(`${item.icon}${item.n}を使用した。`);return;}
+  b.qty--;if(b.qty<=0) G.bag=G.bag.filter(x=>!(x.type==='consumable'&&x.id===id));
+  pushSys(`${item.icon}${item.n}を使用した。`);
+  renderParty();openBagModal();saveState();
+}
+function healParty(hp,mp){G.party.forEach(m=>{if(m.status==='dead') return;const d=calcD(m);m.hp=Math.min(d.maxHp,m.hp+hp);m.mp=Math.min(d.maxMp,m.mp+mp);});}
+function curePoisoned(){G.party.forEach(m=>{if(m.status==='poisoned') m.status='normal';});}
+function reviveOne(){const dead=G.party.find(m=>m.status==='dead'||m.hp<=0);if(!dead) return;dead.status='normal';const d=calcD(dead);dead.hp=Math.floor(d.maxHp*0.5);}
+function dropConsumable(id){G.bag=G.bag.filter(x=>!(x.type==='consumable'&&x.id===id));openBagModal();saveState();}
+
+// ================================================================
+// TOWN
+// ================================================================
+function openTownModal(){openM('m-town');}
+
+function returnToTown(){
+  G.inTown=true;
+  closeM('m-town');
+  updateHdr();updateQuickBar();
+  const tMsg='石畳の道、賑やかな店の声、篝火の温もり——街ドーンウォールへ帰還した。\nここでは宿屋で疲れを癒し、神殿で倒れた仲間を生き返らせ、商店で装備を整えることができる。';
+  pushTown(tMsg);
+  showTownMenu();
+  saveState();
+}
+
+function showTownMenu(){
+  const dead=G.party.filter(m=>m.status==='dead'||m.hp<=0);
+  const unid=G.bag.filter(b=>b.type==='equip'&&!b.identified);
+  document.getElementById('tserv-title').textContent='街のサービス';
+  document.getElementById('tserv-content').innerHTML=`
+    <div class="service-row" onclick="townInn()">
+      <div><div class="service-name">🏨 宿屋「黄金の杯」</div><div class="service-desc">HP・MPを全回復する</div></div>
+      <div class="service-cost">${TOWN.inn_cost} G</div>
+    </div>
+    <div class="service-row" onclick="townTemple()">
+      <div><div class="service-name">⛪ 神殿</div><div class="service-desc">戦闘不能を蘇生する ${dead.length>0?'（'+dead.length+'名倒れている）':''}</div></div>
+      <div class="service-cost">${TOWN.revive_cost} G / 人</div>
+    </div>
+    <div class="service-row" onclick="townIdentify()">
+      <div><div class="service-name">🔮 鑑定屋</div><div class="service-desc">未鑑定アイテムを鑑定する ${unid.length>0?'（'+unid.length+'個）':''}</div></div>
+      <div class="service-cost">鑑定費用は品質による</div>
+    </div>
+    <div class="service-row" onclick="townShop()">
+      <div><div class="service-name">⚔️ 武器・防具店</div><div class="service-desc">装備を買う・売る</div></div>
+      <div class="service-cost">現在フロアに応じた品揃え</div>
+    </div>
+    <div class="divider"></div>
+    <div class="service-row" onclick="leaveForDungeon()">
+      <div><div class="service-name">🚪 ダンジョンへ出発</div><div class="service-desc">B${G.floor}Fへ戻る（最深: B${G.maxFloor}F）</div></div>
+      <div class="service-cost"></div>
+    </div>`;
+  openM('m-tserv');
+}
+
+function townInn(){
+  if(G.gold<TOWN.inn_cost){pushSys(`宿屋: ${TOWN.inn_cost}Gが必要です（所持: ${G.gold}G）`);return;}
+  G.gold-=TOWN.inn_cost;
+  G.party.forEach(m=>{if(m.status!=='dead'){const d=calcD(m);m.hp=d.maxHp;m.mp=d.maxMp;}});
+  pushTown(`宿屋で一夜を明かした。パーティ全員のHP・MPが全回復した。（-${TOWN.inn_cost}G）`);
+  renderParty();updateHdr();closeM('m-tserv');saveState();
+}
+
+function townTemple(){
+  const dead=G.party.filter(m=>m.status==='dead'||m.hp<=0);
+  if(!dead.length){pushSys('神殿: 倒れているメンバーはいません。');closeM('m-tserv');return;}
+  const total=TOWN.revive_cost*dead.length;
+  if(G.gold<total){pushSys(`神殿: ${total}G必要です（${dead.length}名 x ${TOWN.revive_cost}G）`);return;}
+  G.gold-=total;
+  dead.forEach(m=>{m.status='normal';const d=calcD(m);m.hp=Math.floor(d.maxHp*0.5);m.mp=Math.floor(d.maxMp*0.5);});
+  pushTown(`神殿の奇跡が${dead.map(m=>m.name).join('・')}を蘇らせた。（-${total}G）`);
+  renderParty();updateHdr();closeM('m-tserv');saveState();
+}
+
+function townIdentify(){
+  const unid=G.bag.filter(b=>b.type==='equip'&&!b.identified);
+  if(!unid.length){pushSys('鑑定屋: 未鑑定のアイテムはありません。');closeM('m-tserv');return;}
+  let totalCost=0;const results=[];
+  unid.forEach(b=>{
+    const cost=RARITY[b.r]?.id_cost||100;
+    if(G.gold>=cost){G.gold-=cost;totalCost+=cost;b.identified=true;results.push(IDATA[b.id]);}
+  });
+  if(results.length){
+    pushTown(`鑑定完了！（-${totalCost}G）\n${results.map(i=>`${i.icon} ${i.n}: ${istat(i)}`).join('\n')}`);
+  } else {
+    pushSys(`ゴールドが足りず鑑定できませんでした。`);
   }
-  if (oldId && oldId!==itemId && !S.sharedInventory.includes(oldId)) {
-    S.sharedInventory.push(oldId);
-  }
-  m.equip[eqSlot] = itemId;
-  closeModal('modal-item'); renderEqContent(); renderParty(); saveState();
+  updateHdr();updateBadges();closeM('m-tserv');saveState();
 }
 
-function unequipSlot() {
-  const m = S.party.find(x=>x.id===eqActive);
-  if (!m || !eqSlot) return;
-  const oldId = m.equip[eqSlot];
-  if (oldId && !S.sharedInventory.includes(oldId)) S.sharedInventory.push(oldId);
-  m.equip[eqSlot] = null;
-  closeModal('modal-item'); renderEqContent(); renderParty(); saveState();
+function townShop(){
+  // Show buyable items based on max floor reached
+  const range=G.maxFloor<=10?'1-10':G.maxFloor<=30?'11-30':G.maxFloor<=60?'31-60':'61-100';
+  const dt=DROP_TABLES[range];
+  document.getElementById('tserv-title').textContent='武器・防具店';
+  const buySection=dt.items.map(id=>{
+    const item=IDATA[id];if(!item) return '';
+    const price=Math.round({legendary:5000,rare:1200,uncommon:300,common:80}[item.r||'common']);
+    const rc=RARITY[item.r]?.c||'';
+    return `<div class="service-row" onclick="buyItem('${id}',${price})">
+      <div><div class="service-name"><span class="${rc}">${item.icon} ${item.n}</span></div><div class="service-desc">${istat(item)}</div></div>
+      <div class="service-cost">${price}G</div>
+    </div>`;
+  }).join('');
+  const consSection=dt.consumables.map(id=>{
+    const item=CDATA[id];if(!item) return '';
+    return `<div class="service-row" onclick="buyCons('${id}',${item.value})">
+      <div><div class="service-name">${item.icon} ${item.n}</div><div class="service-desc">${item.desc}</div></div>
+      <div class="service-cost">${item.value}G</div>
+    </div>`;
+  }).join('');
+  document.getElementById('tserv-content').innerHTML=`
+    <div style="text-align:center;font-family:'IM Fell English',serif;font-size:14px;color:#c9a227;margin-bottom:10px">所持金: ${G.gold.toLocaleString()}G</div>
+    <div class="flabel" style="margin-bottom:6px">装備品</div>${buySection}
+    <div class="divider"></div>
+    <div class="flabel" style="margin-bottom:6px">消耗品</div>${consSection}
+    <button class="auto-btn" style="margin-top:10px" onclick="showTownMenu()">← 戻る</button>`;
+}
+
+function buyItem(id,price){
+  if(G.gold<price){pushSys(`ゴールドが足りません（必要: ${price}G）`);return;}
+  G.gold-=price;
+  const uid=G.nextUid++;const item=IDATA[id];
+  G.bag.push({type:'equip',id,identified:true,uid,slot:item.slot,r:item.r});
+  pushTown(`${item.icon}${item.n}を購入した。（-${price}G）`);
+  updateHdr();townShop();saveState();
+}
+function buyCons(id,price){
+  if(G.gold<price){pushSys(`ゴールドが足りません（必要: ${price}G）`);return;}
+  G.gold-=price;
+  const ex=G.bag.find(b=>b.type==='consumable'&&b.id===id);
+  if(ex) ex.qty++;else G.bag.push({type:'consumable',id,qty:1});
+  pushTown(`${CDATA[id].icon}${CDATA[id].n}を購入した。（-${price}G）`);
+  updateHdr();townShop();saveState();
+}
+
+function leaveForDungeon(){
+  G.inTown=false;
+  closeM('m-tserv');
+  pushNarr(`街を出発し、ダンジョンB${G.floor}Fへと向かった。\n闇が再び牙を剥く——進め、勇者たちよ。`);
+  updateHdr();updateQuickBar();saveState();
 }
 
 // ================================================================
 // MESSAGES
 // ================================================================
-function mdToHtml(text) {
-  return esc(text)
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/\n/g,'<br>');
-}
-function pushNarrator(text, save=true) {
-  const m={type:'narrator',text,ts:Date.now()};
-  S.messages.push(m); appendMsg(m); scrollBot();
-  if(save) saveState();
-}
-function pushPlayer(text) {
-  const m={type:'player',text,ts:Date.now()};
-  S.messages.push(m); appendMsg(m); scrollBot(); saveState();
-}
-function pushSys(text) {
-  const m={type:'system',text,ts:Date.now()};
-  S.messages.push(m); appendMsg(m); scrollBot();
-}
-function appendMsg(m) {
+function mdHtml(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');}
+function pushNarr(text,save=true){const m={type:'narrator',text,ts:Date.now()};G.messages.push(m);appendMsg(m);scrollBot();if(save)saveState();}
+function pushPlayer(text){const m={type:'player',text,ts:Date.now()};G.messages.push(m);appendMsg(m);scrollBot();saveState();}
+function pushSys(text){const m={type:'system',text,ts:Date.now()};G.messages.push(m);appendMsg(m);scrollBot();}
+function pushTown(text){const m={type:'town-narr',text,ts:Date.now()};G.messages.push(m);appendMsg(m);scrollBot();saveState();}
+function appendMsg(m){
   const area=document.getElementById('chat-area');
-  const el=document.createElement('div');
-  el.className=`msg ${m.type}`;
-  if(m.type==='narrator')      el.innerHTML=`<div class="msg-sender">ゲームマスター</div><div class="msg-bubble">${mdToHtml(m.text)}</div>`;
-  else if(m.type==='player')   el.innerHTML=`<div class="msg-sender">パーティ</div><div class="msg-bubble">${mdToHtml(m.text)}</div>`;
-  else                         el.innerHTML=`<div class="msg-bubble">${esc(m.text)}</div>`;
+  const el=document.createElement('div');el.className=`msg ${m.type}`;
+  const senders={narrator:'ゲームマスター','town-narr':'街の語り部',player:'パーティ',system:''};
+  if(m.type==='system') el.innerHTML=`<div class="msg-bubble">${esc(m.text)}</div>`;
+  else el.innerHTML=`<div class="msg-sender">${senders[m.type]||''}</div><div class="msg-bubble">${mdHtml(m.text)}</div>`;
   area.appendChild(el);
 }
-function renderAllMessages() {
-  document.getElementById('chat-area').innerHTML='';
-  S.messages.forEach(appendMsg); scrollBot();
-}
-function scrollBot(){ const a=document.getElementById('chat-area'); setTimeout(()=>a.scrollTop=a.scrollHeight,60); }
+function renderMessages(){document.getElementById('chat-area').innerHTML='';G.messages.forEach(appendMsg);scrollBot();}
+function scrollBot(){const a=document.getElementById('chat-area');setTimeout(()=>a.scrollTop=a.scrollHeight,60);}
 
 // TYPING
 let typingEl=null;
-function showTyping(){ const area=document.getElementById('chat-area'); typingEl=document.createElement('div'); typingEl.className='typing-wrap'; typingEl.innerHTML=`<div class="msg-sender">ゲームマスター</div><div class="typing-bubble"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`; area.appendChild(typingEl); scrollBot(); }
-function hideTyping(){ if(typingEl){typingEl.remove();typingEl=null;} }
+function showTyping(){const area=document.getElementById('chat-area');typingEl=document.createElement('div');typingEl.className='typing-wrap';typingEl.innerHTML=`<div class="msg-sender">${G.inTown?'街の語り部':'ゲームマスター'}</div><div class="typing-bubble"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;area.appendChild(typingEl);scrollBot();}
+function hideTyping(){if(typingEl){typingEl.remove();typingEl=null;}}
 
 // ================================================================
 // API
 // ================================================================
-async function sendMessage() {
+async function sendMsg(){
   const inp=document.getElementById('chat-input');
-  const text=inp.value.trim();
-  if(!text||S.loading) return;
-  if(!S.settings.apiKey){ pushSys('APIキー未設定です。⚙から設定してください。'); openSettings(); return; }
-  inp.value=''; autoResize(inp);
-  pushPlayer(text); setLoading(true);
-  try {
-    const raw=await callApi(text);
-    hideTyping();
-    const {story,statusData}=parseResp(raw);
-    if(story) pushNarrator(story);
-    if(statusData) applyStatus(statusData);
-    saveState();
-  } catch(e) {
-    hideTyping();
-    pushSys(`エラー: ${e.message}`);
-  }
-  setLoading(false);
+  const text=inp.value.trim();if(!text||G.loading) return;
+  if(!G.cfg.apiKey){pushSys('APIキー未設定。⚙から設定してください。');openSettings();return;}
+  inp.value='';autoResize(inp);pushPlayer(text);setLoad(true);
+  try{const raw=await callApi(text);hideTyping();const{story,sd}=parseResp(raw);if(story) G.inTown?pushTown(story):pushNarr(story);if(sd) applyStatus(sd);saveState();}
+  catch(e){hideTyping();pushSys(`エラー: ${e.message}`);}
+  setLoad(false);
 }
 
-function getBase() {
-  const s=S.settings;
-  if(s.provider==='custom') return (s.customUrl||'').replace(/\/$/,'');
-  if(s.provider==='openrouter') return 'https://openrouter.ai/api/v1';
-  return 'https://api.openai.com/v1';
-}
+function getBase(){const c=G.cfg;if(c.provider==='custom') return(c.customUrl||'').replace(/\/$/,'');if(c.provider==='openrouter') return'https://openrouter.ai/api/v1';return'https://api.openai.com/v1';}
 
-async function callApi(userText) {
+async function callApi(userText){
   showTyping();
-  const pSummary = S.party.map(m=>{ const d=calcDerived(m); return `ID${m.id}(${m.name})Lv${m.level} HP:${m.hp}/${d.maxHp} MP:${m.mp}/${d.maxMp} 状態:${m.status} ATK:${d.atk} DEF:${d.def} MAT:${d.matk} HIT:${d.hit} EVA:${d.eva}`; }).join('\n');
-  const hist = S.messages.filter(m=>m.type==='player'||m.type==='narrator').slice(-10).map(m=>({role:m.type==='player'?'user':'assistant',content:m.text}));
-  const sysPlusState = S.settings.systemPrompt+`\n\n現在のパーティ状態:\n${pSummary}\nフロア: B${S.floor}F`;
-  const body={model:S.settings.model,max_tokens:1200,temperature:0.88,messages:[{role:'system',content:sysPlusState},...hist,{role:'user',content:userText}]};
-  const headers={'Content-Type':'application/json','Authorization':`Bearer ${S.settings.apiKey}`,'HTTP-Referer':location.href,'X-Title':'Dungeon Chronicles'};
+  const ps=G.party.map(m=>{const d=calcD(m);return`ID${m.id}(${m.name})Lv${m.level} HP:${m.hp}/${d.maxHp} MP:${m.mp}/${d.maxMp} 状態:${m.status} ATK:${d.atk} DEF:${d.def}`;}).join('\n');
+  const hist=G.messages.filter(m=>m.type==='player'||m.type==='narrator'||m.type==='town-narr').slice(-10).map(m=>({role:m.type==='player'?'user':'assistant',content:m.text}));
+  const loc=G.inTown?`現在地: 街ドーンウォール`:`現在地: ダンジョンB${G.floor}F（最深: B${G.maxFloor}F）`;
+  const sys=G.cfg.systemPrompt+`\n\n${loc}\nパーティ状態:\n${ps}\n所持金: ${G.gold}G\nバッグ内アイテム数: ${G.bag.length}`;
+  const body={model:G.cfg.model,max_tokens:1200,temperature:0.88,messages:[{role:'system',content:sys},...hist,{role:'user',content:userText}]};
+  const headers={'Content-Type':'application/json','Authorization':`Bearer ${G.cfg.apiKey}`,'HTTP-Referer':location.href,'X-Title':'Dungeon Chronicles'};
   const res=await fetch(`${getBase()}/chat/completions`,{method:'POST',headers,body:JSON.stringify(body)});
-  if(!res.ok){ let msg=`HTTP ${res.status}`; try{const d=await res.json();msg=d.error?.message||d.message||msg;}catch(_){} throw new Error(msg); }
+  if(!res.ok){let msg=`HTTP ${res.status}`;try{const d=await res.json();msg=d.error?.message||d.message||msg;}catch(_){}throw new Error(msg);}
   const data=await res.json();
   if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
   return data.choices?.[0]?.message?.content||'';
 }
 
-function parseResp(raw) {
-  let statusData=null;
-  // Extract from fenced blocks
-  const fr=/```(?:json)?[ \t]*([\s\S]*?)(?:```|$)/g;
-  let fm; while((fm=fr.exec(raw))!==null){ try{ const p=JSON.parse(fm[1].trim()); if(p.status){statusData=p.status;} }catch(_){} }
+function parseResp(raw){
+  let sd=null;
+  const fr=/```(?:json)?[ \t]*([\s\S]*?)(?:```|$)/g;let fm;
+  while((fm=fr.exec(raw))!==null){try{const p=JSON.parse(fm[1].trim());if(p.status){sd=p.status;}}catch(_){}}
   let cleaned=raw.replace(/```(?:json)?[\s\S]*?(?:```|$)/g,'').trim();
-  // Bare JSON scan
-  if(!statusData){ let depth=0,start=-1; for(let i=0;i<cleaned.length;i++){ if(cleaned[i]==='{'){if(!depth)start=i;depth++;}else if(cleaned[i]==='}'){ depth--; if(!depth&&start!==-1){ try{const p=JSON.parse(cleaned.slice(start,i+1));if(p.status){statusData=p.status;cleaned=(cleaned.slice(0,start)+cleaned.slice(i+1)).trim();break;}}catch(_){} start=-1; } } } }
+  if(!sd){let depth=0,start=-1;for(let i=0;i<cleaned.length;i++){if(cleaned[i]==='{'){if(!depth)start=i;depth++;}else if(cleaned[i]==='}'){depth--;if(!depth&&start!==-1){try{const p=JSON.parse(cleaned.slice(start,i+1));if(p.status){sd=p.status;cleaned=(cleaned.slice(0,start)+cleaned.slice(i+1)).trim();break;}}catch(_){}start=-1;}}}}
   const story=cleaned.replace(/^[ \t]*[{}\[\],].*$/gm,'').replace(/\n{3,}/g,'\n\n').trim();
-  return {story,statusData};
+  return{story,sd};
 }
 
-function setLoading(v){ S.loading=v; document.getElementById('btn-send').disabled=v; }
-function quickAction(a){ const inp=document.getElementById('chat-input'); inp.value=a; autoResize(inp); sendMessage(); }
+function setLoad(v){G.loading=v;document.getElementById('btn-send').disabled=v;}
+function quickAct(a){
+  if(a==='ダンジョンへ戻る'){leaveForDungeon();return;}
+  if(a==='街へ帰る'){openM('m-town');return;}
+  if(G.inTown){
+    if(a==='宿屋で休む'){townInn();return;}
+    if(a==='神殿で蘇生を頼む'){townTemple();return;}
+    if(a==='アイテムを鑑定してもらう'){townIdentify();return;}
+    if(a==='道具屋へ行く'||a==='武器屋へ行く'){townShop();document.getElementById('tserv-title').textContent='武器・防具店';openM('m-tserv');return;}
+    if(a==='ダンジョンへ戻る'){leaveForDungeon();return;}
+  }
+  const inp=document.getElementById('chat-input');inp.value=a;autoResize(inp);sendMsg();
+}
 
 // ================================================================
-// SETTINGS MODAL
+// SETTINGS
 // ================================================================
-function openSettings() {
-  const s=S.settings;
-  document.getElementById('sel-provider').value   = s.provider;
-  document.getElementById('inp-custom-url').value = s.customUrl||'';
-  document.getElementById('inp-apikey').value     = s.apiKey;
-  document.getElementById('inp-model').value      = s.model;
-  document.getElementById('inp-sysprompt').value  = s.systemPrompt;
-  onProviderChange();
-  renderPartyCfg();
-  openModal('modal-settings');
-}
-function onProviderChange() {
-  const v=document.getElementById('sel-provider').value;
-  document.getElementById('grp-custom').style.display=v==='custom'?'block':'none';
-}
-function renderPartyCfg() {
-  document.getElementById('party-config-list').innerHTML = S.party.map((m,i)=>`
-    <div class="party-cfg-row">
-      <input type="text" class="f-input" style="width:44px" id="pcfg-icon-${i}" value="${esc(m.icon)}" maxlength="4">
-      <input type="text" class="f-input" id="pcfg-name-${i}" value="${esc(m.name)}" placeholder="名前">
-      <select class="f-input" style="width:90px" id="pcfg-job-${i}">
-        ${JOB_KEYS.map(k=>`<option value="${k}" ${m.jobKey===k?'selected':''}>${JOBS[k].name}</option>`).join('')}
-      </select>
-    </div>`).join('');
-}
-function saveSettings() {
-  S.party.forEach((m,i)=>{
-    const icon=document.getElementById(`pcfg-icon-${i}`)?.value.trim();
-    const name=document.getElementById(`pcfg-name-${i}`)?.value.trim();
-    const jobKey=document.getElementById(`pcfg-job-${i}`)?.value;
-    if(icon) m.icon=icon;
-    if(name) m.name=name;
-    if(jobKey) m.jobKey=jobKey;
-  });
-  S.settings={
-    provider:    document.getElementById('sel-provider').value,
-    customUrl:   document.getElementById('inp-custom-url').value.trim(),
-    apiKey:      document.getElementById('inp-apikey').value.trim(),
-    model:       document.getElementById('inp-model').value.trim()||DEFAULT_SETTINGS.model,
-    systemPrompt:document.getElementById('inp-sysprompt').value||buildDefaultPrompt()
-  };
-  renderParty(); saveState(); closeModal('modal-settings');
-  pushSys(S.settings.apiKey?'設定を保存しました。':'APIキーが未入力です。');
-}
-function confirmReset(){ if(confirm('本当にリセットしますか？')){ localStorage.removeItem(STORAGE_KEY); location.reload(); } }
+function openSettings(){const c=G.cfg;document.getElementById('sel-prov').value=c.provider;document.getElementById('inp-url').value=c.customUrl||'';document.getElementById('inp-key').value=c.apiKey;document.getElementById('inp-model').value=c.model;document.getElementById('inp-sys').value=c.systemPrompt;provChange();renderPartyCfg();openM('m-settings');}
+function provChange(){const v=document.getElementById('sel-prov').value;document.getElementById('grp-custom').style.display=v==='custom'?'block':'none';}
+function renderPartyCfg(){document.getElementById('party-cfg').innerHTML=G.party.map((m,i)=>`<div class="pcrow"><input type="text" class="finput" style="width:42px" id="pci-${i}" value="${esc(m.icon)}" maxlength="4"><input type="text" class="finput" id="pcn-${i}" value="${esc(m.name)}" placeholder="名前"><select class="finput" style="width:88px" id="pcj-${i}">${JK.map(k=>`<option value="${k}" ${m.jobKey===k?'selected':''}>${JOBS[k].name}</option>`).join('')}</select></div>`).join('');}
+function saveSetting(){G.party.forEach((m,i)=>{const ic=document.getElementById(`pci-${i}`)?.value.trim();const nm=document.getElementById(`pcn-${i}`)?.value.trim();const jk=document.getElementById(`pcj-${i}`)?.value;if(ic) m.icon=ic;if(nm) m.name=nm;if(jk) m.jobKey=jk;});G.cfg={provider:document.getElementById('sel-prov').value,customUrl:document.getElementById('inp-url').value.trim(),apiKey:document.getElementById('inp-key').value.trim(),model:document.getElementById('inp-model').value.trim()||DEFAULT_CFG.model,systemPrompt:document.getElementById('inp-sys').value||buildSysPrompt()};renderParty();saveState();closeM('m-settings');pushSys(G.cfg.apiKey?'設定を保存しました。':'APIキーが未入力です。');}
+function doReset(){if(confirm('本当にリセットしますか？')){localStorage.removeItem(SK_STORE);location.reload();}}
+
+// Settings tabs
+function stab(id,el){['api','pty','sys'].forEach(t=>{const e=document.getElementById(`st-${t}`);if(e) e.style.display=t===id?'block':'none';});document.querySelectorAll('#m-settings .tab-bar .tab-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
 
 // ================================================================
 // MODAL UTILS
 // ================================================================
-function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
-function overlayClick(e, id){ if(e.target.id===id) closeModal(id); }
-
-function switchTab(tab, el, group) {
-  const prefix = group==='settings'?'stab':'';
-  const tabs   = group==='settings'?['api','party','sys']:[];
-  if(tabs.length){ tabs.forEach(t=>{ const el2=document.getElementById(`stab-${t}`); if(el2) el2.style.display=t===tab?'block':'none'; }); }
-  el.closest('.tab-bar').querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-}
+function openM(id){document.getElementById(id).classList.remove('hidden');}
+function closeM(id){document.getElementById(id).classList.add('hidden');}
+function ovClick(e,id){if(e.target.id===id) closeM(id);}
 
 // ================================================================
 // STORAGE
 // ================================================================
-function saveState() {
-  try{ localStorage.setItem(STORAGE_KEY,JSON.stringify({party:S.party,messages:S.messages.slice(-60),floor:S.floor,settings:S.settings,sharedInventory:S.sharedInventory})); }catch(_){}
-}
-function loadState() {
-  try{
-    const raw=localStorage.getItem(STORAGE_KEY);
-    if(!raw) return;
-    const d=JSON.parse(raw);
-    if(Array.isArray(d.party)&&d.party.length) S.party=d.party;
-    if(Array.isArray(d.messages)&&d.messages.length) S.messages=d.messages;
-    if(d.floor) S.floor=d.floor;
-    if(d.settings) S.settings={...DEFAULT_SETTINGS,...d.settings};
-    if(d.sharedInventory) S.sharedInventory=d.sharedInventory;
-    // Migrate old saves
-    S.party.forEach(m=>{
+function saveState(){try{localStorage.setItem(SK_STORE,JSON.stringify({party:G.party,messages:G.messages.slice(-60),floor:G.floor,maxFloor:G.maxFloor,gold:G.gold,inTown:G.inTown,cfg:G.cfg,bag:G.bag,nextUid:G.nextUid}));}catch(_){}}
+function loadState(){
+  try{const raw=localStorage.getItem(SK_STORE);if(!raw) return;const d=JSON.parse(raw);
+    if(d.party?.length) G.party=d.party;if(d.messages?.length) G.messages=d.messages;
+    if(d.floor) G.floor=d.floor;if(d.maxFloor) G.maxFloor=d.maxFloor;
+    if(d.gold!==undefined) G.gold=d.gold;if(d.inTown!==undefined) G.inTown=d.inTown;
+    if(d.cfg) G.cfg={...DEFAULT_CFG,...d.cfg};
+    if(d.bag) G.bag=d.bag;if(d.nextUid) G.nextUid=d.nextUid;
+    G.party.forEach(m=>{
       if(!m.stats) m.stats={str:8,mag:5,vit:8,spd:6,lck:5};
       if(!m.equip) m.equip={rhand:null,lhand:null,head:null,armor:null,feet:null,acc:null};
-      if(!m.jobKey) m.jobKey=JOB_KEYS[m.id]||'warrior';
+      if(!m.jobKey) m.jobKey=JK[m.id]||'warrior';
       if(m.pendingPoints===undefined) m.pendingPoints=0;
-      if(m.level===undefined) m.level=1;
-      if(m.exp===undefined) m.exp=0;
-      if(m.expNext===undefined) m.expNext=100;
+      if(!m.level) m.level=1;if(m.exp===undefined) m.exp=0;if(!m.expNext) m.expNext=100;
     });
   }catch(_){}
 }
 
 // ================================================================
-// INPUT UTILS
+// UTILS
 // ================================================================
-function handleKeyDown(e){ if(!('ontouchstart' in window)&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
-function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,110)+'px'; }
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function clamp(v){return Math.max(0,Math.min(100,v));}
+function sum(arr){return arr.reduce((a,b)=>a+b,0);}
+function handleKey(e){if(!('ontouchstart' in window)&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 init();
 </script>
