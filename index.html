@@ -1242,7 +1242,18 @@ function ovClick(e,id){if(e.target.id===id) closeM(id);}
 // ================================================================
 function saveState(){try{localStorage.setItem(SK_STORE,JSON.stringify({party:G.party,messages:G.messages.slice(-60),floor:G.floor,maxFloor:G.maxFloor,gold:G.gold,inTown:G.inTown,phase:G.phase,battleSel:G.battleSel,cfg:G.cfg,bag:G.bag,nextUid:G.nextUid}));}catch(_){}}
 function loadState(){
-  try{const raw=localStorage.getItem(SK_STORE);if(!raw) return;const d=JSON.parse(raw);
+  try{
+    // Migrate settings from old storage keys if current key has no data
+    let raw = localStorage.getItem(SK_STORE);
+    if(!raw){
+      const OLD_KEYS=['dchrpg_v4','dchrpg_v3','dchrpg_v2','dchrpg_v1'];
+      for(const ok of OLD_KEYS){
+        const old=localStorage.getItem(ok);
+        if(old){try{const od=JSON.parse(old);if(od.cfg&&od.cfg.apiKey){G.cfg={...DEFAULT_CFG,...od.cfg};pushSys('⚙ 旧データからAPI設定を引き継ぎました。');}}catch(_){}}
+      }
+      return;
+    }
+    const d=JSON.parse(raw);
     if(d.party?.length) G.party=d.party;if(d.messages?.length) G.messages=d.messages;
     if(d.floor) G.floor=d.floor;if(d.maxFloor) G.maxFloor=d.maxFloor;
     if(d.phase) G.phase=d.phase;if(d.battleSel) G.battleSel=d.battleSel;
