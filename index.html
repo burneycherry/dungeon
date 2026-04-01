@@ -267,6 +267,8 @@ textarea.finput{resize:vertical;line-height:1.5}
     <button class="bcancel" onclick="closeM('m-settings')">閉じる</button>
     <button class="bok" onclick="saveSetting()">保存</button>
   </div>
+  <button style="width:100%;margin-top:10px;background:none;border:1px solid #2e4028;border-radius:8px;color:#4a9a6a;font-size:13px;padding:9px;cursor:pointer;font-family:'Crimson Pro',serif" onclick="testConnection()">🔌 接続テスト</button>
+  <div id="test-result" style="font-size:12px;text-align:center;margin-top:6px;min-height:16px"></div>
   <button class="danger-link" onclick="doReset()">ゲームをリセット</button>
 </div></div>
 
@@ -1198,9 +1200,19 @@ async function callApi(userText){
   const loc=G.inTown?`現在地: 街ドーンウォール`:`現在地: ダンジョンB${G.floor}F（最深: B${G.maxFloor}F）`;
   const sys=G.cfg.systemPrompt+`\n\n${loc}\nパーティ状態:\n${ps}\n所持金: ${G.gold}G\nバッグ内アイテム数: ${G.bag.length}`;
   const body={model:G.cfg.model,max_tokens:1200,temperature:0.88,messages:[{role:'system',content:sys},...hist,{role:'user',content:userText}]};
-  const headers={'Content-Type':'application/json','Authorization':`Bearer ${G.cfg.apiKey}`,'HTTP-Referer':location.href,'X-Title':'Dungeon Chronicles'};
+  // Google AI Studio doesn't allow custom headers (CORS preflight failure)
+  // Only add OpenRouter-specific headers when using OpenRouter
+  const headers={'Content-Type':'application/json','Authorization':`Bearer ${G.cfg.apiKey}`};
+  if(G.cfg.provider==='openrouter'){
+    headers['HTTP-Referer']=location.href;
+    headers['X-Title']='Dungeon Chronicles';
+  }
   const res=await fetch(`${getBase()}/chat/completions`,{method:'POST',headers,body:JSON.stringify(body)});
-  if(!res.ok){let msg=`HTTP ${res.status}`;try{const d=await res.json();msg=d.error?.message||d.message||msg;}catch(_){}throw new Error(msg);}
+  if(!res.ok){
+    let msg=`HTTP ${res.status}`;
+    try{const d=await res.json();msg=d.error?.message||d.error?.code||d.message||JSON.stringify(d);}catch(_){}
+    throw new Error(msg);
+  }
   const data=await res.json();
   if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
   return data.choices?.[0]?.message?.content||'';
@@ -1221,6 +1233,27 @@ function setLoad(v){G.loading=v;document.getElementById('btn-send').disabled=v;}
 // ================================================================
 // SETTINGS
 // ================================================================
+async function testConnection(){
+  const key  = document.getElementById('inp-key').value.trim();
+  const url  = document.getElementById('inp-url').value.trim();
+  const model= document.getElementById('inp-model').value.trim()||'gemini-2.0-flash';
+  const prov = document.getElementById('sel-prov').value;
+  const res_el = document.getElementById('test-result');
+  if(!key){res_el.style.color='#cc5533';res_el.textContent='APIキーを入力してください';return;}
+  res_el.style.color='#c9a227';res_el.textContent='テスト中...';
+  try{
+    let base = prov==='custom'?(url||'').replace(/\/$/,'') : prov==='openrouter'?'https://openrouter.ai/api/v1':'https://api.openai.com/v1';
+    const headers={'Content-Type':'application/json','Authorization':`Bearer ${key}`};
+    if(prov==='openrouter'){headers['HTTP-Referer']=location.href;}
+    const r = await fetch(`${base}/chat/completions`,{
+      method:'POST',headers,
+      body:JSON.stringify({model,max_tokens:10,messages:[{role:'user',content:'hi'}]})
+    });
+    if(r.ok){res_el.style.color='#4a9a6a';res_el.textContent='✅ 接続成功！';}
+    else{const d=await r.json().catch(()=>({}));res_el.style.color='#cc5533';res_el.textContent=`❌ HTTP ${r.status}: ${d.error?.message||d.message||'エラー'}`;}
+  }catch(e){res_el.style.color='#cc5533';res_el.textContent=`❌ ${e.message}`;}
+}
+
 function openSettings(){const c=G.cfg;document.getElementById('sel-prov').value=c.provider;document.getElementById('inp-url').value=c.customUrl||'';document.getElementById('inp-key').value=c.apiKey;document.getElementById('inp-model').value=c.model;document.getElementById('inp-sys').value=c.systemPrompt;provChange();renderPartyCfg();openM('m-settings');}
 function provChange(){const v=document.getElementById('sel-prov').value;document.getElementById('grp-custom').style.display=v==='custom'?'block':'none';}
 function renderPartyCfg(){document.getElementById('party-cfg').innerHTML=G.party.map((m,i)=>`<div class="pcrow"><input type="text" class="finput" style="width:42px" id="pci-${i}" value="${esc(m.icon)}" maxlength="4"><input type="text" class="finput" id="pcn-${i}" value="${esc(m.name)}" placeholder="名前"><select class="finput" style="width:88px" id="pcj-${i}">${JK.map(k=>`<option value="${k}" ${m.jobKey===k?'selected':''}>${JOBS[k].name}</option>`).join('')}</select></div>`).join('');}
