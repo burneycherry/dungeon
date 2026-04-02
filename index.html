@@ -761,28 +761,26 @@ function applyStatus(data){
   // ── Phase transition from AI event ──
   const ev = (data.event||'exploration').toLowerCase();
   if(!G.inTown){
-    if((ev==='battle'||ev==='boss') && !G.skipBattleDetect){
+    // Always trust explicit JSON event — skipBattleDetect only blocks TEXT-based detection
+    if(ev==='battle'||ev==='boss'){
       G.phase='battle';
-      // Init battle selections for alive members
       G.party.forEach(m=>{
         if(m.status!=='dead'&&m.hp>0){
           const j=JOBS[m.jobKey];
           if(j&&j.name==='魔法使い') G.battleSel[m.id]='魔法';
           else if(j&&j.name==='僧侶') G.battleSel[m.id]='回復';
-          else if(j&&j.name==='盗賊') G.battleSel[m.id]='攻撃';
           else G.battleSel[m.id]='攻撃';
         }
       });
     } else if(ev==='exploration'||ev==='rest'||ev==='trap'){
       G.phase='explore';
-    } else if(ev==='treasure' && !G.skipBattleDetect){
+      G.skipBattleDetect=false;  // safe to reset here
+    } else if(ev==='treasure'){
       G.phase='treasure';
+      G.skipBattleDetect=false;
     }
-    // stairs/transfer override regardless
-    if(data.stairsFound)  G.phase='stairs';
-    if(data.transferCircleFound) G.phase='transfer';
-    // Consume skipBattleDetect
-    G.skipBattleDetect=false;
+    if(data.stairsFound)  { G.phase='stairs'; G.skipBattleDetect=false; }
+    if(data.transferCircleFound) { G.phase='transfer'; G.skipBattleDetect=false; }
   }
 
   if(Array.isArray(data.party)){
@@ -1238,8 +1236,8 @@ const TRANSFER_WORDS=['転移陣','魔法陣','ポータル','帰還','街へ'];
 function detectPhaseFromText(story, sd){
   // If applyStatus already set a non-explore phase, trust it
   if(G.phase!=='explore') return;
-  // Skip battle detection after player just sent battle actions (prevent re-trigger)
-  if(G.skipBattleDetect){ return; }  // consumed in applyStatus
+  // Skip TEXT-based battle detection after player sent battle actions
+  if(G.skipBattleDetect){ G.skipBattleDetect=false; return; }
   // Only detect from text if sd had no event or had exploration event
   const ev=(sd?.event||'').toLowerCase();
   if(ev==='battle'||ev==='boss'||ev==='treasure'||ev==='stairs') return;
