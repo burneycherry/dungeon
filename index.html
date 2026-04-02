@@ -556,11 +556,13 @@ status:normal/poisoned/burned/frozen/stunned/dead
 stairsFound:true/false (階段を発見したらtrue)
 itemsDropped例:["steel_sword","potion",{"id":"frost_blade","unidentified":true}]
 
-【フェーズ別ルール】
-- 移動中(exploration):敵・宝箱・階段・転移陣などをランダムに発生させる
-- 戦闘(battle):プレイヤーが行動を選択するまで待つ。行動は【行動】の形式で来る
-- 宝箱(treasure):開け方によってドロップ内容を変える
-- 階段発見時:stairsFoundをtrueにする（floorDownはプレイヤーが降りると告げた時のみ）`;
+【フェーズ別ルール - 最重要】
+- 敵が現れた・戦闘が始まった → eventを必ず"battle"にする
+- 移動・探索中 → eventを"exploration"にする
+- 宝箱を発見 → eventを"treasure"にする
+- 階段を発見 → stairsFoundをtrueにする
+- 転移陣を発見 → transferCircleFoundをtrueにする
+- 戦闘中はプレイヤーが【行動】を送るまで待つ`;
 }
 
 // ================================================================
@@ -600,7 +602,7 @@ function updateHdr(){
 
 // PHASE-BASED QUICK ACTIONS
 const PHASE_ACTS = {
-  explore:  [['周囲を探索する','🔍 探索'],['前進する','↑ 前進'],['右へ進む','→ 右'],['左へ進む','← 左'],['後退する','↓ 後退'],['休憩する','🏕 休憩']],
+  explore:  [['周囲を探索する','🔍 探索'],['前進する','↑ 前進'],['右へ進む','→ 右'],['左へ進む','← 左'],['後退する','↓ 後退'],['休憩する','🏕 休憩'],['[戦闘モード切替]','⚔ 戦闘']],
   treasure: [['宝箱を慎重に開ける','🔓 慎重に開ける'],['宝箱を素早く開ける','📦 素早く開ける'],['宝箱を放置する','🚫 放置']],
   stairs:   [['階段を降りる','▼ 降りる'],['階段を無視して探索を続ける','✖ 無視']],
   transfer: [['転移陣を使って街へ帰還する','✨ 街へ転移'],['転移陣を無視して探索を続ける','✖ 無視']],
@@ -675,6 +677,22 @@ function confirmBattleAction(){
 }
 
 function handlePhaseAct(action){
+  // Manual battle mode toggle
+  if(action==='[戦闘モード切替]'){
+    G.phase= G.phase==='battle'?'explore':'battle';
+    if(G.phase==='battle'){
+      G.party.forEach(m=>{
+        if(m.status!=='dead'&&m.hp>0){
+          const j=JOBS[m.jobKey];
+          if(j?.name==='魔法使い') G.battleSel[m.id]='魔法';
+          else if(j?.name==='僧侶') G.battleSel[m.id]='回復';
+          else G.battleSel[m.id]='攻撃';
+        }
+      });
+    }
+    updateQuickBar();
+    return;
+  }
   // Town special actions
   if(G.inTown){
     if(action==='宿屋で休む'){townInn();return;}
@@ -1181,12 +1199,57 @@ function hideTyping(){if(typingEl){typingEl.remove();typingEl=null;}}
 // ================================================================
 // API
 // ================================================================
+// PHASE DETECTION FROM STORY TEXT (fallback when AI JSON is wrong)
+const BATTLE_WORDS=['攻撃','敵','ゴブリン','モンスター','戦闘','戦う','迫','囲','倒','ダメージ','魔物','斬','魔法','呪文','討','逃'];
+const TREASURE_WORDS=['宝箱','宝物','チェスト','財宝','鍵','宝'];
+const STAIRS_WORDS=['階段','下の階','深層','降り','B2','B3','B4','B5'];
+const TRANSFER_WORDS=['転移陣','魔法陣','ポータル','帰還','街へ'];
+
+function detectPhaseFromText(story, sd){
+  // If applyStatus already set a non-explore phase, trust it
+  if(G.phase!=='explore') return;
+  // Only detect from text if sd had no event or had exploration event
+  const ev=(sd?.event||'').toLowerCase();
+  if(ev==='battle'||ev==='boss'||ev==='treasure'||ev==='stairs') return;
+
+  const has=(words)=>words.some(w=>story.includes(w));
+  if(has(BATTLE_WORDS)&&story.length>80){
+    // Count battle indicators - need at least 2 to trigger
+    const count=BATTLE_WORDS.filter(w=>story.includes(w)).length;
+    if(count>=2){
+      G.phase='battle';
+      G.party.forEach(m=>{
+        if(m.status!=='dead'&&m.hp>0){
+          const j=JOBS[m.jobKey];
+          if(j?.name==='魔法使い') G.battleSel[m.id]='魔法';
+          else if(j?.name==='僧侶') G.battleSel[m.id]='回復';
+          else G.battleSel[m.id]='攻撃';
+        }
+      });
+      updateQuickBar();
+      return;
+    }
+  }
+  if(has(TREASURE_WORDS)){G.phase='treasure';updateQuickBar();return;}
+  if(has(STAIRS_WORDS)){G.phase='stairs';updateQuickBar();return;}
+  if(has(TRANSFER_WORDS)){G.phase='transfer';updateQuickBar();return;}
+}
+
 async function sendMsg(){
   const inp=document.getElementById('chat-input');
   const text=inp.value.trim();if(!text||G.loading) return;
   if(!G.cfg.apiKey){pushSys('APIキー未設定。⚙から設定してください。');openSettings();return;}
   inp.value='';autoResize(inp);pushPlayer(text);setLoad(true);
-  try{const raw=await callApi(text);hideTyping();const{story,sd}=parseResp(raw);if(story) G.inTown?pushTown(story):pushNarr(story);if(sd) applyStatus(sd);saveState();}
+  try{
+    const raw=await callApi(text);
+    hideTyping();
+    const{story,sd}=parseResp(raw);
+    if(story) G.inTown?pushTown(story):pushNarr(story);
+    if(sd) applyStatus(sd);
+    // Fallback: detect phase from story text if JSON event was missing or wrong
+    if(!G.inTown) detectPhaseFromText(story||'', sd);
+    saveState();
+  }
   catch(e){hideTyping();pushSys(`エラー: ${e.message}`);}
   setLoad(false);
 }
