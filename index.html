@@ -567,7 +567,17 @@ itemsDropped例:["steel_sword","potion",{"id":"frost_blade","unidentified":true}
 - 宝箱を発見 → eventを"treasure"にする
 - 階段を発見 → stairsFoundをtrueにする
 - 転移陣を発見 → transferCircleFoundをtrueにする
-- 戦闘中はプレイヤーが【行動】を送るまで待つ`;
+- 戦闘中はプレイヤーが【行動】を送るまで待つ
+
+【HP/MP回復ルール】
+- 休憩(rest)時: 全員のHPを最大値の30%回復、MPを20%回復してJSONに反映
+- 毒状態のキャラは休憩してもstatusはpoisonedのまま（解毒薬が必要）
+- 回復魔法使用時: 対象キャラのHPをMPコスト分回復してJSONに反映
+- 戦闘でダメージを受けたら必ずhpを減らしてJSONに反映
+
+【文章の長さ】
+- ストーリー本文は3〜5文程度に抑える（JSONが切れないように）
+- 必ずJSON末尾の\`\`\`まで出力を完結させること`;
 }
 
 // ================================================================
@@ -772,9 +782,23 @@ function applyStatus(data){
           else G.battleSel[m.id]='攻撃';
         }
       });
-    } else if(ev==='exploration'||ev==='rest'||ev==='trap'){
+    } else if(ev==='rest'){
       G.phase='explore';
-      G.skipBattleDetect=false;  // safe to reset here
+      G.skipBattleDetect=false;
+      // Apply rest recovery if AI didn't update HP in JSON
+      // (fallback: ensure some recovery happened)
+      G.party.forEach(m=>{
+        if(m.status==='dead') return;
+        const d=calcD(m);
+        // Only apply fallback if hp wasn't already updated by AI's party array
+        if(!data.party || !data.party.find(u=>u.id===m.id)) {
+          m.hp=Math.min(d.maxHp, m.hp+Math.floor(d.maxHp*0.3));
+          m.mp=Math.min(d.maxMp, m.mp+Math.floor(d.maxMp*0.2));
+        }
+      });
+    } else if(ev==='exploration'||ev==='trap'){
+      G.phase='explore';
+      G.skipBattleDetect=false;
     } else if(ev==='treasure'){
       G.phase='treasure';
       G.skipBattleDetect=false;
@@ -1298,7 +1322,9 @@ async function callApi(userText, callType='story'){
   const hist=G.messages.filter(m=>m.type==='player'||m.type==='narrator'||m.type==='town-narr').slice(-10).map(m=>({role:m.type==='player'?'user':'assistant',content:m.text}));
   const loc=G.inTown?`現在地: 街ドーンウォール`:`現在地: ダンジョンB${G.floor}F（最深: B${G.maxFloor}F）`;
   const sys=G.cfg.systemPrompt+`\n\n${loc}\nパーティ状態:\n${ps}\n所持金: ${G.gold}G\nバッグ内アイテム数: ${G.bag.length}`;
-  const body={model,max_tokens:1200,temperature:0.88,messages:[{role:'system',content:sys},...hist,{role:'user',content:userText}]};
+  // Reduce history length to leave room for JSON output
+  const shortHist=hist.slice(-6);
+  const body={model,max_tokens:1800,temperature:0.85,messages:[{role:'system',content:sys},...shortHist,{role:'user',content:userText}]};
   // Google AI Studio doesn't allow custom headers (CORS preflight failure)
   // Only add OpenRouter-specific headers when using OpenRouter
   const headers={'Content-Type':'application/json','Authorization':`Bearer ${G.cfg.apiKey}`};
