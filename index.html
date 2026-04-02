@@ -257,9 +257,12 @@ textarea.finput{resize:vertical;line-height:1.5}
     <div class="fsec"><label class="flabel">APIキー</label>
       <input type="password" class="finput" id="inp-key" placeholder="AIza... / sk-...">
       <div class="fhint">このデバイスのlocalStorageにのみ保存</div></div>
-    <div class="fsec"><label class="flabel">モデル</label>
-      <input type="text" class="finput" id="inp-model" placeholder="gemini-2.0-flash">
-      <div class="fhint">Google AI Studio: gemini-2.0-flash / OpenRouter: openrouter/free</div></div>
+    <div class="fsec"><label class="flabel">ストーリー用モデル <span style="font-size:10px;color:#5a4a3a">（探索・イベント）</span></label>
+      <input type="text" class="finput" id="inp-story-model" placeholder="gemini-2.5-flash">
+      <div class="fhint">高品質モデル。例: gemini-2.5-flash</div></div>
+    <div class="fsec"><label class="flabel">戦闘用モデル <span style="font-size:10px;color:#5a4a3a">（戦闘処理・RPD節約）</span></label>
+      <input type="text" class="finput" id="inp-battle-model" placeholder="gemini-2.0-flash">
+      <div class="fhint">高速モデル。例: gemini-2.0-flash（RPD上限が高い）</div></div>
   </div>
   <div id="st-pty" style="display:none"><div id="party-cfg"></div></div>
   <div id="st-sys" style="display:none"><textarea class="finput" id="inp-sys" rows="9"></textarea></div>
@@ -488,7 +491,7 @@ function makeMember(jobKey,id){
 // GAME STATE
 // ================================================================
 const SK_STORE='dchrpg_v5';
-const DEFAULT_CFG={provider:'custom',customUrl:'https://generativelanguage.googleapis.com/v1beta/openai',apiKey:'',model:'gemini-2.0-flash',systemPrompt:buildSysPrompt()};
+const DEFAULT_CFG={provider:'custom',customUrl:'https://generativelanguage.googleapis.com/v1beta/openai',apiKey:'',model:'gemini-2.5-flash',storyModel:'gemini-2.5-flash',battleModel:'gemini-2.0-flash',systemPrompt:buildSysPrompt()};
 const PROV_URL={openrouter:'https://openrouter.ai/api/v1',openai:'https://api.openai.com/v1'};
 
 let G={
@@ -500,9 +503,10 @@ let G={
   bag:[], nextUid:1,
   // Phase system
   phase:'explore',  // explore | battle | treasure | stairs | transfer | town
-  stairsDepth:0,    // floor depth of found stairs
-  battleSel:{0:'攻撃',1:'魔法',2:'回復',3:'攻撃'},  // per-char battle action
-  battleActIdx:{0:0,1:0,2:0,3:0}
+  stairsDepth:0,
+  battleSel:{0:'攻撃',1:'魔法',2:'回復',3:'攻撃'},
+  battleActIdx:{0:0,1:0,2:0,3:0},
+  skipBattleDetect:false  // prevent re-triggering battle after action sent
 };
 
 function buildSysPrompt(){
@@ -672,11 +676,21 @@ function confirmBattleAction(){
   const parts = G.party.filter(m=>m.status!=='dead'&&m.hp>0).map(m=>`${m.name}:${G.battleSel[m.id]||'攻撃'}`);
   const text  = `【行動】${parts.join('、')}`;
   G.phase='explore';
+  G.skipBattleDetect=true;  // prevent immediate re-trigger from text
   updateQuickBar();
   const inp=document.getElementById('chat-input');inp.value=text;autoResize(inp);sendMsg();
 }
 
 function handlePhaseAct(action){
+  // Actions that should reset phase to explore after sending
+  const PHASE_RESET_ACTIONS=[
+    '宝箱を慎重に開ける','宝箱を素早く開ける','宝箱を放置する',
+    '階段を降りる','階段を無視して探索を続ける',
+    '転移陣を使って街へ帰還する','転移陣を無視して探索を続ける'
+  ];
+  if(PHASE_RESET_ACTIONS.includes(action)){
+    G.phase='explore'; updateQuickBar();
+  }
   // Manual battle mode toggle
   if(action==='[戦闘モード切替]'){
     G.phase= G.phase==='battle'?'explore':'battle';
@@ -918,8 +932,17 @@ function openIsel(memberId,slot){
   eqActive=memberId;eqSlot=slot;
   const m=G.party.find(x=>x.id===memberId);
   const curUid=m.equip&&m.equip[slot];
-  // Gather equippable items from bag for this slot
-  const available=G.bag.filter(b=>b.type==='equip'&&IDATA[b.id]&&IDATA[b.id].slot===slot);
+  // Gather UIDs already equipped by OTHER party members (item uniqueness)
+  const takenByOthers=new Set();
+  G.party.forEach(pm=>{
+    if(pm.id===memberId) return;
+    SK.forEach(s=>{ if(pm.equip[s]!=null) takenByOthers.add(pm.equip[s]); });
+  });
+  // Show items in bag for this slot, excluding those equipped by other members
+  const available=G.bag.filter(b=>
+    b.type==='equip' && IDATA[b.id] && IDATA[b.id].slot===slot
+    && (!takenByOthers.has(b.uid) || b.uid===curUid)
+  );
   document.getElementById('isel-title').textContent=`${SLOTS[slot]} — ${m.name}`;
   const list=document.getElementById('isel-list');
   if(!available.length){list.innerHTML=`<div style="text-align:center;color:#5a4a3a;font-size:13px;padding:14px">このスロット用のアイテムがありません</div>`;openM('m-isel');return;}
@@ -1208,15 +1231,17 @@ const TRANSFER_WORDS=['転移陣','魔法陣','ポータル','帰還','街へ'];
 function detectPhaseFromText(story, sd){
   // If applyStatus already set a non-explore phase, trust it
   if(G.phase!=='explore') return;
+  // Skip battle detection after player just sent battle actions (prevent re-trigger)
+  if(G.skipBattleDetect){ G.skipBattleDetect=false; return; }
   // Only detect from text if sd had no event or had exploration event
   const ev=(sd?.event||'').toLowerCase();
   if(ev==='battle'||ev==='boss'||ev==='treasure'||ev==='stairs') return;
 
   const has=(words)=>words.some(w=>story.includes(w));
   if(has(BATTLE_WORDS)&&story.length>80){
-    // Count battle indicators - need at least 2 to trigger
+    // Count battle indicators - need at least 3 to trigger (more strict)
     const count=BATTLE_WORDS.filter(w=>story.includes(w)).length;
-    if(count>=2){
+    if(count>=3){
       G.phase='battle';
       G.party.forEach(m=>{
         if(m.status!=='dead'&&m.hp>0){
@@ -1241,7 +1266,8 @@ async function sendMsg(){
   if(!G.cfg.apiKey){pushSys('APIキー未設定。⚙から設定してください。');openSettings();return;}
   inp.value='';autoResize(inp);pushPlayer(text);setLoad(true);
   try{
-    const raw=await callApi(text);
+    const callType = G.phase==='battle' ? 'battle' : 'story';
+    const raw=await callApi(text, callType);
     hideTyping();
     const{story,sd}=parseResp(raw);
     if(story) G.inTown?pushTown(story):pushNarr(story);
@@ -1256,13 +1282,17 @@ async function sendMsg(){
 
 function getBase(){const c=G.cfg;if(c.provider==='custom') return(c.customUrl||'').replace(/\/$/,'');if(c.provider==='openrouter') return'https://openrouter.ai/api/v1';return'https://api.openai.com/v1';}
 
-async function callApi(userText){
+async function callApi(userText, callType='story'){
   showTyping();
+  // Select model based on call type
+  const model = callType==='battle'
+    ? (G.cfg.battleModel||G.cfg.storyModel||DEFAULT_CFG.battleModel)
+    : (G.cfg.storyModel||G.cfg.model||DEFAULT_CFG.storyModel);
   const ps=G.party.map(m=>{const d=calcD(m);return`ID${m.id}(${m.name})Lv${m.level} HP:${m.hp}/${d.maxHp} MP:${m.mp}/${d.maxMp} 状態:${m.status} ATK:${d.atk} DEF:${d.def}`;}).join('\n');
   const hist=G.messages.filter(m=>m.type==='player'||m.type==='narrator'||m.type==='town-narr').slice(-10).map(m=>({role:m.type==='player'?'user':'assistant',content:m.text}));
   const loc=G.inTown?`現在地: 街ドーンウォール`:`現在地: ダンジョンB${G.floor}F（最深: B${G.maxFloor}F）`;
   const sys=G.cfg.systemPrompt+`\n\n${loc}\nパーティ状態:\n${ps}\n所持金: ${G.gold}G\nバッグ内アイテム数: ${G.bag.length}`;
-  const body={model:G.cfg.model,max_tokens:1200,temperature:0.88,messages:[{role:'system',content:sys},...hist,{role:'user',content:userText}]};
+  const body={model,max_tokens:1200,temperature:0.88,messages:[{role:'system',content:sys},...hist,{role:'user',content:userText}]};
   // Google AI Studio doesn't allow custom headers (CORS preflight failure)
   // Only add OpenRouter-specific headers when using OpenRouter
   const headers={'Content-Type':'application/json','Authorization':`Bearer ${G.cfg.apiKey}`};
@@ -1299,7 +1329,7 @@ function setLoad(v){G.loading=v;document.getElementById('btn-send').disabled=v;}
 async function testConnection(){
   const key  = document.getElementById('inp-key').value.trim();
   const url  = document.getElementById('inp-url').value.trim();
-  const model= document.getElementById('inp-model').value.trim()||'gemini-2.0-flash';
+  const model= document.getElementById('inp-story-model').value.trim()||'gemini-2.5-flash';
   const prov = document.getElementById('sel-prov').value;
   const res_el = document.getElementById('test-result');
   if(!key){res_el.style.color='#cc5533';res_el.textContent='APIキーを入力してください';return;}
@@ -1317,10 +1347,18 @@ async function testConnection(){
   }catch(e){res_el.style.color='#cc5533';res_el.textContent=`❌ ${e.message}`;}
 }
 
-function openSettings(){const c=G.cfg;document.getElementById('sel-prov').value=c.provider;document.getElementById('inp-url').value=c.customUrl||'';document.getElementById('inp-key').value=c.apiKey;document.getElementById('inp-model').value=c.model;document.getElementById('inp-sys').value=c.systemPrompt;provChange();renderPartyCfg();openM('m-settings');}
+function openSettings(){const c=G.cfg;document.getElementById('sel-prov').value=c.provider;document.getElementById('inp-url').value=c.customUrl||'';document.getElementById('inp-key').value=c.apiKey;document.getElementById('inp-story-model').value=c.storyModel||c.model||DEFAULT_CFG.storyModel;document.getElementById('inp-battle-model').value=c.battleModel||DEFAULT_CFG.battleModel;document.getElementById('inp-sys').value=c.systemPrompt;provChange();renderPartyCfg();openM('m-settings');}
 function provChange(){const v=document.getElementById('sel-prov').value;document.getElementById('grp-custom').style.display=v==='custom'?'block':'none';}
 function renderPartyCfg(){document.getElementById('party-cfg').innerHTML=G.party.map((m,i)=>`<div class="pcrow"><input type="text" class="finput" style="width:42px" id="pci-${i}" value="${esc(m.icon)}" maxlength="4"><input type="text" class="finput" id="pcn-${i}" value="${esc(m.name)}" placeholder="名前"><select class="finput" style="width:88px" id="pcj-${i}">${JK.map(k=>`<option value="${k}" ${m.jobKey===k?'selected':''}>${JOBS[k].name}</option>`).join('')}</select></div>`).join('');}
-function saveSetting(){G.party.forEach((m,i)=>{const ic=document.getElementById(`pci-${i}`)?.value.trim();const nm=document.getElementById(`pcn-${i}`)?.value.trim();const jk=document.getElementById(`pcj-${i}`)?.value;if(ic) m.icon=ic;if(nm) m.name=nm;if(jk) m.jobKey=jk;});G.cfg={provider:document.getElementById('sel-prov').value,customUrl:document.getElementById('inp-url').value.trim(),apiKey:document.getElementById('inp-key').value.trim(),model:document.getElementById('inp-model').value.trim()||DEFAULT_CFG.model,systemPrompt:document.getElementById('inp-sys').value||buildSysPrompt()};renderParty();saveState();closeM('m-settings');pushSys(G.cfg.apiKey?'設定を保存しました。':'APIキーが未入力です。');}
+function saveSetting(){G.party.forEach((m,i)=>{const ic=document.getElementById(`pci-${i}`)?.value.trim();const nm=document.getElementById(`pcn-${i}`)?.value.trim();const jk=document.getElementById(`pcj-${i}`)?.value;if(ic) m.icon=ic;if(nm) m.name=nm;if(jk) m.jobKey=jk;});G.cfg={
+    provider:document.getElementById('sel-prov').value,
+    customUrl:document.getElementById('inp-url').value.trim(),
+    apiKey:document.getElementById('inp-key').value.trim(),
+    storyModel:document.getElementById('inp-story-model').value.trim()||DEFAULT_CFG.storyModel,
+    battleModel:document.getElementById('inp-battle-model').value.trim()||DEFAULT_CFG.battleModel,
+    model:document.getElementById('inp-story-model').value.trim()||DEFAULT_CFG.storyModel,
+    systemPrompt:document.getElementById('inp-sys').value||buildSysPrompt()
+  };renderParty();saveState();closeM('m-settings');pushSys(G.cfg.apiKey?'設定を保存しました。':'APIキーが未入力です。');}
 function doReset(){if(confirm('本当にリセットしますか？')){localStorage.removeItem(SK_STORE);location.reload();}}
 
 // Settings tabs
@@ -1336,7 +1374,7 @@ function ovClick(e,id){if(e.target.id===id) closeM(id);}
 // ================================================================
 // STORAGE
 // ================================================================
-function saveState(){try{localStorage.setItem(SK_STORE,JSON.stringify({party:G.party,messages:G.messages.slice(-60),floor:G.floor,maxFloor:G.maxFloor,gold:G.gold,inTown:G.inTown,phase:G.phase,battleSel:G.battleSel,cfg:G.cfg,bag:G.bag,nextUid:G.nextUid}));}catch(_){}}
+function saveState(){try{localStorage.setItem(SK_STORE,JSON.stringify({party:G.party,messages:G.messages.slice(-60),floor:G.floor,maxFloor:G.maxFloor,gold:G.gold,inTown:G.inTown,phase:G.phase,battleSel:G.battleSel,skipBattleDetect:G.skipBattleDetect,cfg:G.cfg,bag:G.bag,nextUid:G.nextUid}));}catch(_){}}
 function loadState(){
   try{
     // Migrate settings from old storage keys if current key has no data
@@ -1352,7 +1390,7 @@ function loadState(){
     const d=JSON.parse(raw);
     if(d.party?.length) G.party=d.party;if(d.messages?.length) G.messages=d.messages;
     if(d.floor) G.floor=d.floor;if(d.maxFloor) G.maxFloor=d.maxFloor;
-    if(d.phase) G.phase=d.phase;if(d.battleSel) G.battleSel=d.battleSel;
+    if(d.phase) G.phase=d.phase;if(d.battleSel) G.battleSel=d.battleSel;G.skipBattleDetect=false;
     if(d.gold!==undefined) G.gold=d.gold;if(d.inTown!==undefined) G.inTown=d.inTown;
     if(d.cfg) G.cfg={...DEFAULT_CFG,...d.cfg};
     if(d.bag) G.bag=d.bag;if(d.nextUid) G.nextUid=d.nextUid;
