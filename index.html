@@ -506,7 +506,8 @@ let G={
   stairsDepth:0,
   battleSel:{0:'攻撃',1:'魔法',2:'回復',3:'攻撃'},
   battleActIdx:{0:0,1:0,2:0,3:0},
-  skipBattleDetect:false  // prevent re-triggering battle after action sent
+  skipBattleDetect:false,  // prevent re-triggering battle after action sent
+  pendingCallType:null  // 'battle'|'story'|null - explicit type for next API call
 };
 
 function buildSysPrompt(){
@@ -675,8 +676,9 @@ function renderBattlePanel(){
 function confirmBattleAction(){
   const parts = G.party.filter(m=>m.status!=='dead'&&m.hp>0).map(m=>`${m.name}:${G.battleSel[m.id]||'攻撃'}`);
   const text  = `【行動】${parts.join('、')}`;
+  G.pendingCallType='battle';   // ★ mark as battle BEFORE phase reset
+  G.skipBattleDetect=true;
   G.phase='explore';
-  G.skipBattleDetect=true;  // prevent immediate re-trigger from text
   updateQuickBar();
   const inp=document.getElementById('chat-input');inp.value=text;autoResize(inp);sendMsg();
 }
@@ -759,7 +761,7 @@ function applyStatus(data){
   // ── Phase transition from AI event ──
   const ev = (data.event||'exploration').toLowerCase();
   if(!G.inTown){
-    if(ev==='battle'||ev==='boss'){
+    if((ev==='battle'||ev==='boss') && !G.skipBattleDetect){
       G.phase='battle';
       // Init battle selections for alive members
       G.party.forEach(m=>{
@@ -771,11 +773,16 @@ function applyStatus(data){
           else G.battleSel[m.id]='攻撃';
         }
       });
-    } else if(ev==='treasure'){ G.phase='treasure';
-    } else if(ev==='exploration'||ev==='rest'||ev==='trap'){ G.phase='explore';
+    } else if(ev==='exploration'||ev==='rest'||ev==='trap'){
+      G.phase='explore';
+    } else if(ev==='treasure' && !G.skipBattleDetect){
+      G.phase='treasure';
     }
+    // stairs/transfer override regardless
     if(data.stairsFound)  G.phase='stairs';
     if(data.transferCircleFound) G.phase='transfer';
+    // Consume skipBattleDetect
+    G.skipBattleDetect=false;
   }
 
   if(Array.isArray(data.party)){
@@ -1232,7 +1239,7 @@ function detectPhaseFromText(story, sd){
   // If applyStatus already set a non-explore phase, trust it
   if(G.phase!=='explore') return;
   // Skip battle detection after player just sent battle actions (prevent re-trigger)
-  if(G.skipBattleDetect){ G.skipBattleDetect=false; return; }
+  if(G.skipBattleDetect){ return; }  // consumed in applyStatus
   // Only detect from text if sd had no event or had exploration event
   const ev=(sd?.event||'').toLowerCase();
   if(ev==='battle'||ev==='boss'||ev==='treasure'||ev==='stairs') return;
@@ -1266,7 +1273,8 @@ async function sendMsg(){
   if(!G.cfg.apiKey){pushSys('APIキー未設定。⚙から設定してください。');openSettings();return;}
   inp.value='';autoResize(inp);pushPlayer(text);setLoad(true);
   try{
-    const callType = G.phase==='battle' ? 'battle' : 'story';
+    const callType = G.pendingCallType || (G.phase==='battle' ? 'battle' : 'story');
+    G.pendingCallType = null;  // consume it
     const raw=await callApi(text, callType);
     hideTyping();
     const{story,sd}=parseResp(raw);
